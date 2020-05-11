@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hcc.mapper.ProBatchMapper">
+
+    <!--批量插入治疗单-->
+    <insert id="insertProBatchList" parameterType="java.util.List">
+            insert into pro_batch(project_id,
+            project_name,
+            send_number,return_number,now_return_number,is_send,is_return,pro_status)
+            values
+            <foreach collection="list" item="item" index="index" separator=",">
+                (#{item.projectId},
+                #{item.projectName},#{item.sendNumber},
+                #{item.returnNumber},#{item.nowReturnNumber},
+                #{item.isSend},#{item.isReturn},
+                #{item.proStatus})
+            </foreach>
+    </insert>
+
+    <!--批量更新退药信息-->
+    <update id="upadetReturnProBatch" parameterType="java.util.List">
+        update pro_batch
+        set is_return=
+        <foreach collection="list" item="item" index="index"
+                 separator=" " open="case" close="end">
+            when id=#{item.id} then #{item.isReturn}
+        </foreach>
+        ,return_number=
+        <foreach collection="list" item="item" index="index"
+                 separator=" " open="case" close="end">
+            when id=#{item.id} then return_number+#{item.returnNumber}
+        </foreach>
+        ,now_return_number=
+        <foreach collection="list" item="item" index="index"
+                 separator=" " open="case" close="end">
+            when id=#{item.id} then #{item.nowReturnNumber}
+        </foreach>
+        where id in
+        <foreach collection="list" index="index" item="item"
+                 separator="," open="(" close=")">
+            #{item.id}
+        </foreach>
+    </update>
+
+    <!--批量更新确认退费信息-->
+    <update id="updateReturnProBath">
+        update pro_batch
+        set now_return_number=
+        <foreach collection="list" item="item" index="index"
+                 separator=" " open="case" close="end">
+            when id=#{item.id} then #{item.nowReturnNumber}
+        </foreach>
+        where id in
+        <foreach collection="list" index="index" item="item"
+                 separator="," open="(" close=")">
+            #{item.id}
+        </foreach>
+    </update>
+
+    <!--搜索治疗批次id-->
+    <select id="selectProBatchByProId" resultType="com.hcc.pojo.ProBatch">
+          select * from pro_batch
+        where project_id=#{projectId}
+    </select>
+</mapper>

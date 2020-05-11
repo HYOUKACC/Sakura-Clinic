@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>Sakura-Login</title>
+
+	<link rel="stylesheet" href="../../lib/layui-v2.5.5/css/layui.css" media="">
+	<link rel="stylesheet" href="../css/login.css" media="all">
+	<link rel="icon" href="images/favicon.ico">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<meta name="apple-mobile-web-app-status-bar-style" content="black">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="format-detection" content="telephone=no">
+
+</head>
+
+<body>
+
+<div id="background">
+	<!--<img src="" width="700px" height="400px">-->
+	<div class="login">
+		<div class="">
+			<!--<div class="login-screen">-->
+			<!--<div class="app-title">-->
+				<!--<h1>樱花诊所</h1>-->
+			<!--</div>-->
+
+			<div class="login-form">
+				<div class="control-group">
+					<input type="text" class="login-field" value="" placeholder="请输入账号" id="login-name" name="username">
+					<label class="login-field-icon fui-user" for="login-name" ></label>
+				</div>
+
+				<div class="control-group" id="btomInput">
+					<input type="password" class="login-field" value="" placeholder="请输入密码" id="login-pass" name="password">
+					<label class="login-field-icon fui-lock " for="login-pass"></label>
+				</div>
+				<div style="text-align: right" id="hrefId">
+					<a class="login-link" href="#"><span id="loginLinId">&gt;&gt;申请账号</span></a>
+				</div>
+
+				<button class="btn btn-primary btn-large btn-block" id="btnSubmit">登录</button>
+				<div id="msgDiv" style="text-align: center">
+					<span id="msgID"></span>
+				</div>
+
+			</div>
+		</div>
+	</div>
+</div>
+
+</body>
+<script src="../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
+<script src="../js/lay-config.js?v=1.0.4" charset="utf-8"></script>
+<script>
+    layui.use(['layer', 'layuimini','echarts'], function () {
+            var $ = layui.jquery;
+		    var  layer = layui.layer;
+
+		    $('#btnSubmit').on('click',function (data) {
+
+		        var password=$('#login-pass').val();
+		        var username=$('#login-name').val();
+
+
+
+		        //console.log(password+" -"+username);
+				$.post('/loginForm',{"name":username,"password":password},function (result) {
+					//console.log(data);
+                    var trans=JSON.parse(result);
+                    if(trans['msg']=='success'){
+                        // 认证成功，跳转到首页
+                        window.location.href="/index";
+                    }else {
+                        // layer.msg(trans['msg'], {time: 1000});
+                        //shake($("#login-name"),"red",3);
+						$("#msgID").text(trans['msg']);
+                        $("#msgID").fadeIn(500);
+                        $("#msgID").fadeOut(2000);
+
+                    }
+
+
+                });
+
+
+            });
+
+
+        $('#loginLinId').click(function () {
+                layer.open({
+                    title: '申请账号',
+                    type: 2,
+                    shade: 0.2,
+                    maxmin: false,
+                    shadeClose: true,
+                    closeBtn: 0,
+                    area: ['25%', '93%'],
+                    content: ['/registerStaffPage'],
+                    success: function (layero, index) {
+					}
+                });
+		});
+
+
+    });
+</script>
+</html>

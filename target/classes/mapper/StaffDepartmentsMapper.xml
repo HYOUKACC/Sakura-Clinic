@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hcc.mapper.StaffDepartmentsMapper">
+
+    <!--检索对外科室-->
+    <select id="selectOutDepart" resultType="com.hcc.pojo.StaffDepartments">
+        select department_id,department_name from staff_departments where department_authority !='内部'
+    </select>
+
+    <!--检索所有科室-->
+    <select id="selectAllDepart" resultType="com.hcc.pojo.StaffDepartments">
+        select department_id,department_name from staff_departments
+    </select>
+</mapper>

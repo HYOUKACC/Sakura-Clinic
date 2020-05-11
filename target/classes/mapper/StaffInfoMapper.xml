@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hcc.mapper.StaffInfoMapper">
+
+
+    <resultMap id="staffInfoMap" type="StaffInfo">
+        <id property="staffId" column="staff_id"/>
+        <result property="password" column="password"/>
+        <result property="name" column="name"/>
+        <result property="nameCode" column="name_code"/>
+        <result property="sex" column="sex"/>
+        <result property="entryDate" column="entry_date"/>
+        <result property="leaveDate" column="leave_date"/>
+        <result property="status" column="status"/>
+        <association property="staffDepartment" javaType="StaffDepartments">
+            <id property="departmentId" column="department_id"/>
+            <result property="departmentName" column="department_name"/>
+            <result property="departmentAuthority" column="department_authority"/>
+        </association>
+        <!--<association property="staffPosition" javaType="StaffPosition">-->
+            <!--<id property="positionId" column="position_id"/>-->
+            <!--<result property="positionInfo" column="position_info"/>-->
+        <!--</association>-->
+        <!--<association property="staffAuthority" javaType="StaffAuthority">-->
+            <!--<id property="authorityId" column="authority_id"/>-->
+            <!--<result property="authorityInfo" column="authority_info"/>-->
+        <!--</association>-->
+    </resultMap>
+
+    <!--为员工添加角色-->
+    <insert id="addPositionUser">
+        insert into staff_position_multi
+        (staff_id,position_id)
+        values (#{arg0},#{arg1})
+    </insert>
+
+    <!--员工注册申请-->
+    <insert id="registerStaffInfo">
+        insert into staff_info
+        (staff_id,password,name,name_code,sex,entry_date,department_id,status)
+        values (#{staffId},#{password},#{name},#{nameCode},#{sex},#{entryDate},#{staffDepartment.departmentId},#{status})
+    </insert>
+
+
+    <!--添加权限给角色-->
+    <insert id="insertAuthorityForPositon">
+        insert into position_authority
+        (authority_id,position_id)
+        values(#{arg0},#{arg1})
+    </insert>
+
+    <!--锁定用户-->
+    <update id="setStatusLock">
+        update staff_info
+        set status='锁定'
+        where staff_id=#{staffId}
+    </update>
+
+    <!--激活用户-->
+    <update id="setStatusUnlock">
+        update staff_info
+        set status='正常'
+        where staff_id=#{staffId}
+    </update>
+
+    <!--重置密码-->
+    <update id="defaultPassword">
+        update staff_info set password=#{password}
+        where
+        staff_id=#{staffId}
+    </update>
+
+    <!--主动修改密码-->
+    <update id="selfPassword">
+        update set password=#{password}
+        where
+        staff_id=#{staffId}
+    </update>
+
+    <!--修改信息(管理员)-->
+    <update id="updateStaffInfo">
+        update staff_info
+        set name=#{name},name_code=#{nameCode},sex=#{sex},entry_date=#{entryDate},
+        leave_date=#{leaveDate},department_id=#{staffDepartment.departmentId}
+        where staff_id=#{staffId}
+    </update>
+
+
+    <!--激活用户-->
+    <update id="updateActivateStaff">
+        update staff_info set status='正常'
+        where staff_id=#{staffId}
+    </update>
+
+
+    <!--员工管理删除当前员工角色-->
+    <delete id="deletePositionUser">
+        delete from staff_position_multi
+        where staff_id=#{arg0} and position_id=#{arg1}
+    </delete>
+
+    <!--删除一个权限给角色-->
+    <delete id="deleteAuthorityForPosition">
+        delete from position_authority
+        where authority_id=#{arg0}  and  position_id=#{arg1}
+    </delete>
+
+    <!--resultType="com.hcc.pojo.StaffInfo"  查询所有员工-->
+    <!--left join staff_position on staff_info.position_id=staff_position.position_id-->
+    <!--left join staff_authority on staff_authority.authority_id=staff_info.authority_id-->
+    <select id="selectAllStaff"  resultMap="staffInfoMap">
+        select  staff_id,name,name_code,sex,entry_date,leave_date,department_id,status,department_name,department_authority
+        from staff_info
+        left join staff_departments using(department_id)
+        where status !='待激活'
+        <trim prefix="and" prefixOverrides="and" suffixOverrides="and">
+            <if test="staffId!=null and staffId !=''">
+                staff_id = #{staffId} and
+            </if>
+            <if test="name!=null and name !=''">
+                name like #{name}"%" and
+            </if>
+            <if test="staffDepartment !=null">
+                <if test="staffDepartment.departmentName !=null and staffDepartment.departmentName !=''">
+                    department_name like #{staffDepartment.departmentName}"%" and
+                </if>
+            </if>
+
+        </trim>
+    </select>
+
+    <!--根据医生科室查询医生-->
+    <select id="selectStaffDep" resultMap="staffInfoMap">
+        select staff_id,name from staff_info
+        left join staff_departments on staff_departments.department_id=staff_info.department_id
+        where staff_departments.department_id=#{departmentId}
+    </select>
+
+
+
+    <!--根据Id读取医生表，患者接诊界面-->
+    <select id="selectStaffId" resultMap="staffInfoMap">
+        select staff_id,name,department_id,department_name
+        from staff_info
+        left  join staff_departments USING (department_id)
+        where staff_id=#{staffId}
+    </select>
+
+
+    <!--根据用户名查询用户(登录认证)-->
+    <select id="selestStaffByNmae" resultMap="staffInfoMap">
+        select * from staff_info
+        left join staff_departments USING (department_id)
+        where name=#{staffName} and status='正常'
+    </select>
+
+    <!--根据ID查询用户的角色（授权）-->
+    <select id="selectPositionByStaffId" resultType="java.lang.String">
+        select position_info
+        from staff_position_multi
+        left JOIN staff_position USING(position_id)
+        WHERE staff_id=#{staffId}
+    </select>
+
+
+    <!--根据用户ID，查询用户拥有的角色有哪些权限（授权）-->
+    <!--查询所有用户的角色，查询所有角色的权限，根据id筛选当前用户角色-->
+    <select id="selectAuthByStaffId" resultType="java.lang.String">
+        select distinct authoridy_resource
+        from position_authority
+        left JOIN staff_authority USING(authority_id)
+        WHERE position_id in (select position_id
+        from staff_position_multi
+        WHERE staff_id=#{staffId})
+    </select>
+
+    <!--根据用户ID，查询当前用户没有哪些角色（员工管理）-->
+    <select id="selectNoPositionById" resultType="java.util.Map">
+        select position_id as positionId,staff_position_c as staffPositionC
+        from staff_position
+	    WHERE position_id
+	    not in (SELECT position_id from staff_position_multi
+				left join staff_info USING(staff_id)
+				left join staff_position USING(position_id)
+				WHERE staff_id=#{staffId})
+    </select>
+
+    <!--员工管理查询用户的角色-->
+    <select id="selectPositionUser" resultType="java.util.Map">
+        select
+        position_id as positionId,
+        staff_id as staffId,
+        staff_position_c as staffPositionC
+        from staff_position_multi
+        left JOIN staff_position USING(position_id)
+        WHERE staff_id=#{staffId}
+    </select>
+
+    <!--显示待激活用户-->
+    <select id="selectNoActivateStaff" resultMap="staffInfoMap">
+        select staff_id,name,name_code,sex,entry_date,department_id,department_name,status
+        from staff_info
+        left join staff_departments using (department_id)
+        where status='待激活'
+    </select>
+
+    <!--显示当前系统的角色-->
+    <select id="selectNowPosition" resultType="java.util.Map">
+        select position_id as positionId,staff_position_c as staffPositionC
+        from staff_position
+    </select>
+
+    <!--显示当前角色有哪些权限-->
+    <select id="selectNowPositionAuthority" resultType="java.util.Map">
+        select position_id as positionId,
+		authority_name as authorityName,authority_id as authorityId
+		from position_authority
+		left JOIN staff_authority USING(authority_id)
+		where position_id=#{positionId}
+    </select>
+
+
+    <!--显示当前系统角色没有哪些权限-->
+    <select id="selectNowPositionAuthorityNot" resultType="java.util.Map">
+        select authority_id as authorityId,authority_name as authorityName
+		from staff_authority
+		WHERE authority_id
+		not in (select authority_id
+		from position_authority
+		left JOIN staff_authority USING(authority_id)
+		where position_id=#{positionId})
+    </select>
+
+
+
+</mapper>

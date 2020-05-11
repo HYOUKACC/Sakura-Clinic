@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hcc.mapper.CPrescribeMapper">
+
+    <resultMap id="CPrescribeMap" type="CPrescribe">
+        <id property="id" column="id" />
+        <result property="medicinesName" column="medicines_name"/>
+        <result property="batchNumber" column="batch_number"/>
+        <result property="productionDate" column="production_date"/>
+        <result property="expiryDate" column="expiry_date"/>
+        <result property="sourceArea" column="source_area"/>
+        <result property="dosageForm" column="dosage_form"/>
+        <result property="saleUnit" column="sale_unit"/>
+        <result property="cDirection" column="c_direction"/>
+        <result property="singleDose" column="single_dose"/>
+        <result property="frequency" column="frequency"/>
+        <result property="duration" column="duration"/>
+        <result property="number" column="number"/>
+        <result property="price" column="price"/>
+        <result property="cPrescribeInfo" column="c_prescribe_info"/>
+        <result property="isSend" column="is_send"/>
+        <result property="isReturn" column="is_return"/>
+        <result property="cPrescribeStatus" column="c_prescribe_status"/>
+        <association property="medicalRecord" javaType="MedicalRecord">
+            <id property="medicalRecordId" column="medical_record_id" />
+            <result property="registerDate" column="register_date"/>
+            <result property="consultationDate" column="consultation_date"/>
+            <result property="isSend" column="is_send"/>
+            <result property="isReturn" column="is_return"/>
+            <result property="isNeed" column="is_need"/>
+            <result property="registerStatus" column="register_status"/>
+        </association>
+        <association property="medicineItem" javaType="MedicineItem">
+            <id property="medicinesId" column="medicines_id" />
+        </association>
+    </resultMap>
+
+    <!--批量存储中药处方单-->
+    <insert id="saveAllCP" parameterType="java.util.List">
+        insert into c_prescribe(medical_record_id,medicines_name,
+        source_area,dosage_form,sale_unit,
+        c_direction,single_dose,frequency,duration,
+        number,price,c_prescribe_info,is_send,is_return,c_prescribe_status)
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.medicalRecord.medicalRecordId},#{item.medicinesName},
+            #{item.sourceArea},
+            #{item.dosageForm},
+            #{item.saleUnit},#{item.cDirection},
+            #{item.singleDose},#{item.frequency},
+            #{item.duration},
+            #{item.number},#{item.price},#{item.cPrescribeInfo},
+            #{item.isSend},#{item.isReturn},#{item.cPrescribeStatus})
+        </foreach>
+    </insert>
+
+    <!--批量修改中药处方单-->
+    <update id="updateSendMedical" parameterType="java.util.List">
+        update c_prescribe
+        set is_send=
+        <foreach collection="list" item="item" index="index"
+                 separator=" " open="case" close="end">
+            when id=#{item.id} then #{item.isSend}
+        </foreach>
+        where id in
+        <foreach collection="list" index="index" item="item"
+                 separator="," open="(" close=")">
+            #{item.id}
+        </foreach>
+    </update>
+
+    <!--批量更新中药处方退药信息-->
+    <update id="updateReturnMedical" parameterType="java.util.List">
+        update c_prescribe
+        set is_return=
+        <foreach collection="list" item="item" index="index"
+                 separator=" " open="case" close="end">
+            when id=#{item.id} then #{item.isReturn}
+        </foreach>
+        where id in
+        <foreach collection="list" index="index" item="item"
+                 separator="," open="(" close=")">
+            #{item.id}
+        </foreach>
+    </update>
+
+
+    <!--根据病历ID获取中药处方单-->
+    <!--select id,medical_record_id,medicines_name,sale_unit,number,price,dosage_form,single_dose,duration-->
+    <select id="selectCPByMrId" resultType="com.hcc.pojo.CPrescribe">
+        select *
+        from  c_prescribe
+        where medical_record_id=#{medicalRecordId} and c_prescribe_status='1'
+    </select>
+
+    <!--&lt;!&ndash;根据Id获取中药待发药列表&ndash;&gt;-->
+    <!--<select id="selectWaitSendCPByMrId" resultType="com.hcc.pojo.CPrescribe">-->
+
+    <!--</select>-->
+
+
+</mapper>

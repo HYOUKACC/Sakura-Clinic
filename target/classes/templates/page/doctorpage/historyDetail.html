@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>历史病历详情</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../lib/layui-v2.5.5/css/layui.css" media="all" >
+    <link rel="stylesheet" href="../css/public.css" media="all" >
+
+    <script src="../lib/dist/axios.js" charset="utf-8"></script>
+    <script src="../lib/dist/xm-select.js" charset="utf-8"></script>
+    <style>
+        .recordTitle{
+            font-weight: bold;
+            font-size: 12px;
+        }
+        .recordText{
+            font-size: 12px;
+            text-decoration: underline;
+        }
+        .recordRegsTitle{
+            /*font-weight: bold;*/
+            font-size: 16px;
+        }
+        .hideTex{
+            white-space: nowrap;      /*超出的空白区域不换行*/
+            overflow: hidden;         /*超出隐藏*/
+            text-overflow:ellipsis;  /*文本超出显示省略号*/
+        }
+        #test1 ::-webkit-scrollbar{/*滚动条整体样式*/
+            width:5px;     /*高宽分别对应横竖滚动条的尺寸*/
+            height: auto;
+            scrollbar-arrow-color:red;
+
+        }
+        #test1 ::-webkit-scrollbar-thumb{
+
+            background:#C1C1C1; /* 滚动条内部滑块颜色*/
+        }
+    </style>
+</head>
+<body>
+<div class="layuimini-container">
+    <div class="layuimini-main">
+        <div class=""  id="test1" style="">
+            <div   style="border: 1px solid #E6E6E6;box-shadow: #E6E6E6 1px 1px 1px 1px;margin: 5px 0 0 0;" >
+                <div class="laui-row"  style="text-align: left;font-weight: bold;font-size: 10px;margin: 5px 5px 0px 5px">
+                    <span>No:</span>
+                    <span id="medicalRecordId3Id" name="medicalRecordId3"></span>
+                </div>
+                <div class="laui-row" style="text-align: center;font-weight: bold;font-size: 25px;margin: 0px 0 0px 0">
+                    樱花诊所
+                </div>
+                <div class="layui-row">
+                    <div class="laui-row " style="text-align: left;margin: 8px 0 5px 5px">
+                        <div class="layui-inline layui-col-xs4 hideTex" >
+                            <span class="recordTitle">卡号:</span>
+                            <span class="recordText" style="font-size: 11px" name="patientId3" id="patientId3Id"></span>
+                        </div>
+                        <div class="layui-inline layui-col-xs4">
+                            <span class="recordTitle">挂号时间:</span>
+                            <span class="recordText" name="registerDate3" id="registerDate3Id"></span>
+                        </div>
+                        <div class="layui-inline layui-col-xs4">
+                            <span class="recordTitle">接诊时间:</span>
+                            <span class="recordText" name="consultationDate3" id="consultationDate3Id"></span>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="layui-row">
+                    <div class="laui-row" style="text-align: left;margin: 8px 0 5px 5px">
+                        <div class="layui-inline layui-col-xs4 hideTex">
+                            <span class="recordTitle">姓名:</span>
+                            <span class="recordText" name="patientName3" id="patientName3Id"></span>
+                        </div>
+                        <div class="layui-inline layui-col-xs2">
+                            <span class="recordTitle">性别:</span>
+                            <span class="recordText" name="sex3" id="sex3Id"></span>
+                        </div>
+                        <div class="layui-inline layui-col-xs2">
+                            <span class="recordTitle">年龄:</span>
+                            <span class="recordText" name="birthday3" id="birthday3Id"></span>
+
+                        </div>
+                        <div class="layui-inline layui-col-xs4 hideTex">
+                            <span class="recordTitle">科室:</span>
+                            <span class="recordText" name="departmentName3" id="departmentName3Id"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-row">
+                    <div class="laui-row " style="text-align: left;margin: 8px 0 5px 5px">
+                        <div class="layui-inline layui-col-xs4 hideTex" >
+                            <span class="recordTitle">血压:</span>
+                            <span class="recordText" name="patientBp3" id="patientBp3Id"></span>
+                            <span class="recordText" >mmHg</span>
+                        </div>
+                        <div class="layui-inline layui-col-xs2 hideTex" style="margin: 0px 1px 0px 0px">
+                            <span class="recordTitle">身高:</span>
+                            <span class="recordText" name="patientHeight3" id="patientHeight3Id"></span>
+                            <span class="recordText" >cm</span>
+                        </div>
+                        <div class="layui-inline layui-col-xs2 hideTex" >
+                            <span class="recordTitle">体重:</span>
+                            <span class="recordText" name="patientWeight3" id="patientWeight3Id"></span>
+                            <span class="recordText" >kg</span>
+                        </div>
+                        <div class="layui-inline layui-col-xs2 hideTex" >
+                            <span class="recordTitle">体温:</span>
+                            <span class="recordText" name="patientTemperature3" id="patientTemperature3Id"></span>
+                            <span class="recordText" >℃</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-row">
+                    <div class="laui-row hideTex" style="text-align: left;margin: 8px 0 5px 5px">
+                        <span class="recordTitle">临床诊断:</span>
+                        <span class="recordText" name="clinicalDiagnosis3" id="clinicalDiagnosis3Id" style="cursor:pointer"></span>
+                    </div>
+                </div>
+                <hr class="layui-bg-black">
+                <div class="laui-row" style="text-align: left;font-weight: bold;font-size: 25px;margin: 0px 0 5px 5px">
+                    Rp:
+                </div>
+                <div class="layui-row">
+                    <div class="laui-row" style="text-align: left;margin: 8px 0 0px 5px">
+                        <div class="layui-inline layui-col-md1">
+                            <span class="recordRegsTitle">西药:</span>
+                        </div>
+                        <div class="layui-inline layui-col-md11">
+                            <textarea name="wPrescribe3" id="wPrescribe3Id"  readonly="readonly" class="layui-textarea" style="min-height: 50px;font-size: 12px;border:none;" ></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-row">
+                    <div class="laui-row" style="text-align: left;margin: 8px 0 0px 5px">
+                        <div class="layui-inline layui-col-md1">
+                            <span  class="recordRegsTitle">中药:</span>
+                        </div>
+                        <div class="layui-inline layui-col-md11">
+                            <textarea name="cPrescribe3" id="cPrescribe3Id" readonly="readonly" class="layui-textarea" style="min-height: 50px;font-size: 12px;border:none;" ></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-row">
+                    <div class="laui-row" style="text-align: left;margin: 8px 0 0px 5px">
+                        <div class="layui-inline layui-col-md1">
+                            <span class="recordRegsTitle">治疗:</span>
+                        </div>
+                        <div class="layui-inline layui-col-md11">
+                            <textarea name="projectItem3" id="projectItem3Id"  readonly="readonly" class="layui-textarea" style="min-height: 50px;font-size: 12px;border:none;" ></textarea>
+                        </div>
+                    </div>
+                </div>
+                <hr class="layui-bg-black">
+                <div class="layui-row">
+                    <div class="laui-row" style="text-align: left;margin: 3px 0 5px 5px">
+                        <div class="layui-col-md3"  id="doctorNameDiv">
+                            <span class="recordTitle">医师:</span>
+                            <span class="recordText" name="name3" id="name3Id"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+<script src="../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
+<script src="../js/lay-config.js?v=1.0.4" charset="utf-8"></script>
+<script>
+    layui.use(['form', 'table','flow','layer', 'element'], function () {
+        var $ = layui.jquery,
+            form = layui.form;
+        var element = layui.element;
+        var layer = layui.layer;
+
+        // 临床描述
+        $(document).on("mouseenter", "#clinicalDiagnosis3Id",function () {
+
+            var text='<div style="word-wrap:break-word;max-width: 400px;color: black">\n' +
+                $(this).html() +
+                '</div>';
+
+            layer.tips(text, this, {
+                tips: [3,'#FEF7E0'],
+                time: 1000
+            });
+            //console.log();
+        });
+
+        $.ajax({
+            url:'/showWaitWPDetail',
+            dataType: 'json',
+            type: 'get',
+            data:{"medicalRecordId":$('#medicalRecordId3Id').text()},
+            success: function (data) {
+                var str="";
+                var trans=data['data'];
+                for(var i = 0; i < trans.length; i++){
+                    if(trans[i]!=""){
+
+                        // 右边预览
+                        str=str+trans[i]['medicinesName']+"\n【用法】"+trans[i]['wDirection']+"  【频率】"+trans[i]['frequency']+"  【单次剂量】"+trans[i]['singleDose']+trans[i]['medicinesUnit']+" 【时长】"+trans[i]['duration']+trans[i]['frequencyUnit']+"\n";
+                    }
+                }
+                $('#wPrescribe3Id').val(str);
+               // console.log(trans);
+            }
+        });
+
+        $.ajax({
+            url:'/showWaitCPDetail',
+            dataType: 'json',
+            type: 'get',
+            data:{"medicalRecordId":$('#medicalRecordId3Id').text()},
+            success: function (data) {
+                var trans=data['data'];
+                var str="";
+                var use="";//用法
+                var fre="";//频率
+                var dru="";// 剂数
+                var times=0;// 计次
+                for(var i = 0; i < trans.length; i++){
+                    if(trans[i]!=""){
+                        times++;
+
+                        // 预览
+                        use=trans[i]['cDirection'];
+                        fre=trans[i]['frequency'];
+                        dru=trans[i]['duration'];
+                        str=str+"【"+trans[i]['medicinesName']+" x"+trans[i]['singleDose']+""+trans[i]['saleUnit']+"】  ";
+                        if(times%3==0){
+                            str=str+"\n";
+                        }
+                    }
+                }
+                if(times!=0){
+                    str=str+"\n"+"【用法】:"+use+" 【频次】: "+fre+"【剂数】: "+dru;
+                }
+
+                $('#cPrescribe3Id').val(str);
+                console.log(trans);
+            }
+        });
+
+        $.ajax({
+            url:'/showWaitProDetail',
+            dataType: 'json',
+            type: 'get',
+            data:{"medicalRecordId":$('#medicalRecordId3Id').text()},
+            success: function (data) {
+                var trans=data['data'];
+                var str="";
+                for(var i = 0; i < trans.length; i++){
+                    if(trans[i]!=""){
+
+                        // 右边预览
+                        str=str+trans[i]['projectName']+" 【 次数: "+trans[i]['number']+" 】\n";
+                    }
+                }
+                $('#projectItem3Id').val(str);
+                console.log(trans);
+            }
+        });
+
+
+    });
+</script>
+</html>

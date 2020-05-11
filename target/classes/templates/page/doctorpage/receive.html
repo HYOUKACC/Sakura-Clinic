@@ -1,0 +1,2334 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>患者接诊</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../lib/layui-v2.5.5/css/layui.css" media="all" >
+    <link rel="stylesheet" href="../css/public.css" media="all" >
+
+    <script src="../lib/dist/axios.js" charset="utf-8"></script>
+    <script src="../lib/dist/xm-select.js" charset="utf-8"></script>
+
+
+    <style>
+        /*.layui-table-fixed-l  .layui-table-body table{*/
+            /*padding: 5px 0 5px 0;*/
+        /*}*/
+
+
+        /* 长搜索框*/
+        .layui-form-pane xm-select {
+            margin: 0px 0px 0px 0;
+            width: 600px;
+            /*z-index: 5;*/
+        }
+        xm-select > .xm-body .xm-option {
+            word-wrap:break-word;
+            /*overflow: hidden;*/
+            width: 600px;
+        }
+
+        #wDirectionSearch  xm-select > .xm-body .xm-option{
+            word-wrap:break-word;
+            /*overflow: hidden;*/
+            width: 200px;
+        }
+
+        #medicineFrequencySearch xm-select > .xm-body .xm-option{
+            word-wrap:break-word;
+            /*overflow: hidden;*/
+            width: 200px;
+        }
+
+        #searchCDirectionId  xm-select > .xm-body .xm-option{
+            word-wrap:break-word;
+            /*overflow: hidden;*/
+            width: 200px;
+        }
+
+        #searchCDirectionId  xm-select{
+            margin: 0px 0px 0px 0;
+            width: 200px;
+        }
+
+        #searchCFrequencyId  xm-select > .xm-body .xm-option{
+            word-wrap:break-word;
+            /*overflow: hidden;*/
+            width: 200px;
+        }
+
+        #searchCFrequencyId  xm-select{
+            margin: 0px 0px 0px 0;
+            width: 200px;
+        }
+
+
+
+
+
+        .recordTitle{
+            font-weight: bold;
+            font-size: 12px;
+        }
+        .recordText{
+            font-size: 12px;
+            text-decoration: underline;
+        }
+        .recordRegsTitle{
+            /*font-weight: bold;*/
+            font-size: 16px;
+        }
+        .hideTex{
+            white-space: nowrap;      /*超出的空白区域不换行*/
+            overflow: hidden;         /*超出隐藏*/
+            text-overflow:ellipsis;  /*文本超出显示省略号*/
+        }
+
+        #flow2Div ::-webkit-scrollbar{/*滚动条整体样式*/
+            width:5px;     /*高宽分别对应横竖滚动条的尺寸*/
+            height: auto;
+            scrollbar-arrow-color:red;
+
+        }
+        #flow2Div ::-webkit-scrollbar-thumb{
+
+            background:#C1C1C1; /* 滚动条内部滑块颜色*/
+        }
+
+        #test ::-webkit-scrollbar{/*滚动条整体样式*/
+            width:5px;     /*高宽分别对应横竖滚动条的尺寸*/
+            height: auto;
+            scrollbar-arrow-color:red;
+
+        }
+        #test ::-webkit-scrollbar-thumb{
+
+            background:#C1C1C1; /* 滚动条内部滑块颜色*/
+        }
+
+        /*.wDirectionName > xm-select{ !* 西药处方单下拉选择框*!*/
+            /*margin: 0px 0px 0px 0;*/
+            /*width: 100px;*/
+        /*}*/
+        /*.wDirectionName > xm-select > .xm-body .xm-option { !* 西药处方单下拉选择框*!*/
+            /*word-wrap:break-word;*/
+            /*!*overflow: hidden;*!*/
+            /*width: 100px;*/
+        /*}*/
+        /*#flow2Div ::-webkit-scrollbar{*/
+            /*!*display: none;*!*/
+        /*}*/
+
+
+
+    </style>
+</head>
+<body style="font-size:100%;" >
+<div class="layuimini-container">
+    <div class="layuimini-main">
+        <div class="layui-row" id="countDivId">
+            <!--左半边-->
+            <div class="layui-col-md7" id="flow2Div" style="">
+
+                <input type="hidden" name="medicalRecordId" id="medicalRecordIdId"   class="layui-input" >
+                <input type="hidden" name="patientId" id="patientIdId"   class="layui-input" >
+
+                <fieldset class="layui-elem-field layuimini-search" >
+                    <legend>药品处方</legend>
+                    <div class="layui-tab layui-tab-brief" lay-filter="TabSelect" style="height: 525px;overflow: auto" id="flowDiv">
+                        <ul class="layui-tab-title">
+                            <li class="layui-this">患者病历</li>
+                            <li>西药处方</li>
+                            <li>中药处方</li>
+                            <li>治疗单</li>
+                            <li>历史处方</li>
+                        </ul>
+                        <div class="layui-tab-content" >
+                            <!--患者病历-->
+                            <div class="layui-tab-item layui-show" >
+                                <form class="layui-form layui-form-pane" id="medicalRecordFormId" name="medicalRecordForm">
+                                    <div class="layui-form-item" style="text-align:center">
+                                        <div class="layui-row" style="text-align: center">
+                                            <!--<input type="hidden" name="medicalRecordId" id="medicalRecordIdId"   class="layui-input" >-->
+                                            <!--<input type="hidden" name="patientId" id="patientIdId"   class="layui-input" >-->
+                                            <!--搜索框-->
+                                            <div class="layui-row">
+                                                <div class="layui-col-md5 layui-col-md-offset1">
+                                                    <div style="margin: 5px 10px 5px 10px;text-align: left" >
+                                                        <div id="searchSeleId" class="xm-select-demo" hidden></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="layui-row">
+                                                <div class="layui-col-md5 layui-col-md-offset1">
+                                                    <div style="margin: 5px 10px 5px 10px;text-align: left" >
+                                                        <div id="searchSele2Id" class="xm-select-demo" hidden></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="layui-row">
+                                                <!--左边-->
+                                                <div class="layui-col-md6" style="margin-bottom: 0px">
+
+                                                    <div class="layui-row">
+                                                        <div style="margin: 5px 10px 5px 10px;text-align: left" >
+                                                            <div class="layui-inline-block" style="text-align: left">
+                                                                <label class="layui-form-label" style="font-size: 13px;">身高 cm</label>
+                                                                <div class="layui-input-block">
+                                                                    <input type="tel" name="patientHeight" id="patientHeightId"  autocomplete="off" class="layui-input" placeholder="请直接输入数值">
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="layui-row">
+                                                        <div style="margin: 5px 10px 5px 10px;text-align: left" >
+                                                            <div class="layui-inline-block" style="text-align: left">
+                                                                <label class="layui-form-label" style="font-size: 13px;">体温 ℃</label>
+                                                                <div class="layui-input-block">
+                                                                    <input type="tel" name="patientTemperature" id="patientTemperatureId"  autocomplete="off" class="layui-input" placeholder="请直接输入数值">
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="layui-row">
+                                                        <div style="margin: 5px 10px 5px 10px">
+                                                            <div class="layui-form-item" style="margin-bottom: 0">
+                                                                <div class="layui-form-item layui-form-text" style="margin-bottom: 0">
+                                                                    <label class="layui-form-label">
+                                                                        <div class="layui-row">
+                                                                            <div class="layui-col-md5" style="">
+                                                                                <font style="font-size: 13px;color: #FF4500;" >主诉 *</font>
+                                                                            </div>
+                                                                            <div class="layui-col-md1 layui-col-md-offset6" style="text-align: right">
+                                                                                <i class="layui-icon" style="cursor:pointer" id="searchForDescribeId"></i>
+                                                                            </div>
+                                                                        </div>
+                                                                    </label>
+                                                                    <div class="layui-input-block" >
+                                                                        <textarea name="patientDescribe" id="patientDescribeId" placeholder="请输入内容" class="layui-textarea" style="min-height: 50px" lay-verify="required"></textarea>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="layui-row">
+                                                        <div style="margin: 5px 10px 5px 10px">
+                                                            <div class="layui-form-item layui-form-text" style="margin-bottom: 0px">
+                                                                <label class="layui-form-label" style="font-size: 13px;">过敏史</label>
+                                                                <div class="layui-input-block">
+                                                                    <textarea name="allergies" id="allergiesId" placeholder="请输入内容" class="layui-textarea" style="min-height: 50px">暂无</textarea>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!--右边-->
+                                                <div class="layui-col-md6" style="margin-bottom: 0px">
+                                                    <div class="layui-row">
+                                                        <div style="margin: 5px 10px 5px 10px;text-align: left" >
+                                                            <div class="layui-inline-block" style="text-align: left">
+                                                                <label class="layui-form-label" style="font-size: 13px;">
+                                                                    体重 kg
+                                                                </label>
+                                                                <div class="layui-input-block">
+                                                                    <input type="tel" name="patientWeight" id="patientWeightId"  autocomplete="off" class="layui-input" placeholder="请直接输入数值">
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="layui-row">
+                                                        <div style="margin: 5px 10px 5px 10px;text-align: left" >
+                                                            <div class="layui-inline-block" style="text-align: left">
+                                                                <label class="layui-form-label" style="font-size: 13px;">血压 mmHg</label>
+                                                                <div class="layui-input-block">
+                                                                    <input type="tel" name="patientBp" id="patientBpId"  autocomplete="off" class="layui-input" placeholder="请按A/B格式输入">
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="layui-row">
+                                                        <div style="margin: 5px 10px 5px 10px">
+                                                            <div class="layui-form-item" style="margin-bottom: 0">
+                                                                <div class="layui-form-item layui-form-text" style="margin-bottom: 0">
+                                                                    <label class="layui-form-label" style="font-size: 13px;">
+                                                                        慢性病史
+                                                                    </label>
+                                                                    <div class="layui-input-block">
+                                                                        <textarea name="chronic" id="chronicId" placeholder="请输入内容" class="layui-textarea" style="min-height: 50px">暂无</textarea>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="layui-row">
+                                                        <div style="margin: 5px 10px 5px 10px">
+                                                            <div class="layui-form-item layui-form-text" style="margin-bottom: 0px">
+                                                                <label class="layui-form-label" style="font-size: 13px;">家族病史</label>
+                                                                <div class="layui-input-block">
+                                                                    <textarea name="familyMedicalHistory" id="familyMedicalHistoryId" placeholder="请输入内容" class="layui-textarea" style="min-height: 50px">暂无</textarea>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!--下边-->
+                                            <div class="layui-row">
+                                                <div style="margin: 5px 10px 5px 10px">
+                                                    <div class="layui-form-item" style="margin-bottom: 5px">
+                                                        <div class="layui-form-item layui-form-text" style="margin-bottom: 5px">
+                                                            <label class="layui-form-label">
+                                                                <div class="layui-row">
+                                                                    <div class="layui-col-md5" style="">
+                                                                        <font style="font-size: 13px;color: #FF4500;" >临床诊断 *</font>
+                                                                    </div>
+                                                                    <div class="layui-col-md1 layui-col-md-offset6" style="text-align: right">
+                                                                        <i class="layui-icon" style="cursor:pointer" id="searchForDiagnosisId"></i>
+                                                                    </div>
+                                                                </div>
+                                                            </label>
+                                                            <div class="layui-input-block" >
+                                                                <textarea name="clinicalDiagnosis" id="clinicalDiagnosisId" placeholder="请输入内容" class="layui-textarea" style="min-height: 60px" lay-verify="required"></textarea>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="layui-row">
+                                                <div class="layui-inline" id="submitDiv">
+                                                    <button id="medicalRecordBtnId" class="layui-btn" lay-submit  lay-filter="medicalRecordBtn" style="background-color: #3CB371">保存本页</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <!--西药处方-->
+                            <div class="layui-tab-item">
+                                    <form class="layui-form layui-form-pane" id="wPrescribeFormId" name="wPrescribeForm">
+                                        <div class="layui-form-item" style="text-align:center">
+                                            <div class="layui-row" style="text-align: center">
+                                                <!--搜索框-->
+                                                <div class="layui-row">
+                                                    <div class="layui-col-md5 layui-col-md-offset1">
+                                                        <div style="margin: 5px 10px 5px 10px;text-align: left" >
+                                                            <div id="searchWPrescribeId" class="xm-select-demo" ></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="layui-row " style="" id="wPrescribeTableDivId">
+                                                    <div class="layui-col-md12 ">
+                                                        <div style="text-align: left" >
+                                                            <table class="layui-hide layui-inline" id="wPrescribeTableId" lay-filter="wPrescribeTableFilter" style=""></table>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <script type="text/html" id="wPrescribeTableBar">
+                                                    <a class="layui-btn layui-btn-xs layui-btn-danger data-count-delete" lay-event="delete">删除</a>
+                                                </script>
+                                                <!--用法模板（西药专用）-->
+                                                <script type="text/html" id="wDirectionTem">
+                                                    {{ d.wDirection }}<i class="layui-icon layui-icon-search" style="position: absolute;right: 8px;font-weight: bold;font-size: 14px" ></i>
+                                                </script>
+                                                <!--单次剂量模板（西药专用）-->
+                                                <script type="text/html" id="singleDoseTem">
+                                                    {{ d.singleDose }}<i class="layui-icon " style="position: absolute;right: 8px;font-weight: bold;font-size: 14px" >{{ d.medicinesUnit }}</i>
+                                                </script>
+                                                <!--单价模板（通用）-->
+                                                <script type="text/html" id="priceTem">
+                                                    {{ d.price }}<i class="layui-icon layui-icon-rmb" style="position: absolute;right: 8px;font-weight: bold;font-size: 14px" ></i>
+                                                </script>
+                                                <!--用药频次模板（通用）-->
+                                                <script type="text/html" id="frequencyTem">
+                                                    {{ d.frequency }}<i class="layui-icon layui-icon-search" style="position: absolute;right: 8px;font-weight: bold;font-size: 14px" ></i>
+                                                </script>
+                                                <!--时长模板（通用）-->
+                                                <script type="text/html" id="durationTem">
+                                                    {{#  if(d.frequencyUnit === ''){ }}
+                                                    <i class="layui-icon layui-icon-loading" style="position: absolute;right: 8px;font-weight: bold;font-size: 14px" ></i>
+                                                    {{#  } else { }}
+                                                    {{d.duration}}<i class="layui-icon " style="position: absolute;right: 8px;font-weight: bold;font-size: 14px" >{{d.frequencyUnit}}</i>
+                                                    {{# } }}
+                                                </script>
+                                                <!--总量模板(通用)-->
+                                                <script type="text/html" id="numberTem">
+                                                    {{ d.number }}<i class="layui-icon " style="position: absolute;right: 8px;font-weight: bold;font-size: 14px" >{{d.saleUnit}}</i>
+                                                </script>
+
+
+                                            </div>
+                                            <div class="layui-row">
+                                                <div class="layui-inline" id="submitWPrescribeDiv">
+                                                    <button id="submitWPrescribeBtnId" class="layui-btn" lay-submit  lay-filter="wPrescribeBtn" style="background-color: #3CB371">保存本页</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                            </div>
+
+                            <!--中药处方-->
+                            <div class="layui-tab-item">
+                                <form class="layui-form layui-form-pane" id="cPrescribeFormId" name="medicalRecordForm">
+                                    <div class="layui-form-item" style="text-align:center">
+                                        <div class="layui-row" style="text-align: center">
+                                            <!--搜索框-->
+                                            <div class="layui-row">
+                                                <div class="layui-col-md5 layui-col-md-offset1">
+                                                    <div style="margin: 5px 10px 5px 10px;text-align: left" >
+                                                        <div id="searchCPrescribeId" class="xm-select-demo" ></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="layui-row " style="" id="cPrescribeTableDivId">
+                                                <div class="layui-col-md12 ">
+                                                    <div style="text-align: left">
+                                                        <table class="layui-hide layui-inline" id="cPrescribeTableId" lay-filter="cPrescribeTableFilter"></table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <script type="text/html" id="cPrescribeTableBar">
+                                                <a class="layui-btn layui-btn-xs layui-btn-danger data-count-delete" lay-event="delete">删除</a>
+                                            </script>
+
+                                            <!--单次剂量模板（中药专用）-->
+                                            <script type="text/html" id="csingleDoseTem">
+                                                {{ d.singleDose }}<i class="layui-icon " style="position: absolute;right: 8px;font-weight: bold;font-size: 14px" >{{ d.saleUnit }}</i>
+                                            </script>
+                                            <div class="layui-row " >
+                                                <div class="layui-col-md4">
+                                                    <div id="searchCDirectionDIVId" style="margin: 5px 0px 15px 0px;text-align: left;" >
+                                                        <div id="searchCDirectionId" class="xm-select-demo-alert" style="width: 200px"></div>
+                                                    </div>
+                                                </div>
+                                                <div class="layui-col-md4">
+                                                    <div id="searchCFrequencyDIVId" style="margin: 5px 0px 15px 0px;text-align: left;" >
+                                                        <div id="searchCFrequencyId" class="xm-select-demo-alert" style="width: 200px"></div>
+                                                    </div>
+                                                </div>
+                                                <div class="layui-col-md3">
+                                                    <div class="layui-inline-block" style="text-align: left;margin: 5px 0px 15px 0px;width: 200px">
+                                                        <label class="layui-form-label" style="">剂数</label>
+                                                        <div class="layui-input-block">
+                                                            <input type="tel" name="inputCNumber" id="inputCNumberId"  autocomplete="off" class="layui-input" placeholder="剂">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="layui-row">
+                                            <div class="layui-inline" id="submitCPrescribeDiv">
+                                                <button id="submitCPrescribeBtnId" class="layui-btn" lay-submit  lay-filter="cPrescribeBtn" style="background-color: #3CB371">保存本页</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <!--治疗单-->
+                            <div class="layui-tab-item">
+                                <form class="layui-form layui-form-pane" id="projectFormId" name="projectForm">
+                                    <div class="layui-form-item" style="text-align:center">
+                                        <div class="layui-row" style="text-align: center">
+                                            <!--搜索框-->
+                                            <div class="layui-row">
+                                                <div class="layui-col-md5 layui-col-md-offset1">
+                                                    <div style="margin: 5px 10px 5px 10px;text-align: left" >
+                                                        <div id="searchProjectId" class="xm-select-demo" ></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="layui-row " style="" id="projectTableDivId">
+                                                <div class="layui-col-md12 ">
+                                                    <div style="text-align: left">
+                                                        <table class="layui-hide layui-inline" id="projectTableId" lay-filter="projectTableFilter"></table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <script type="text/html" id="projectTableBar">
+                                                <a class="layui-btn layui-btn-xs layui-btn-danger data-count-delete" lay-event="delete">删除</a>
+                                            </script>
+                                            <div class="layui-row">
+                                                <div class="layui-inline" id="submitProjectDiv">
+                                                    <button id="submitProjectBtnId" class="layui-btn" lay-submit  lay-filter="projectBtn" style="background-color: #3CB371">保存本页</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <!--历史病历-->
+                            <div class="layui-tab-item">
+                                <form class="layui-form layui-form-pane" id="historyMedicalFormId" name="medicalRecordForm">
+                                    <div class="layui-form-item" style="text-align:center">
+                                        <div class="layui-row" style="text-align: center">
+                                            <div class="layui-row " style="" id="historyTableDivId">
+                                                <div class="layui-col-md12 ">
+                                                    <div style="text-align: left">
+                                                        <table class="layui-hide layui-inline" id="historyTableId" lay-filter="historyTableFilter"></table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
+            </div>
+
+            <!--右半边-->
+            <div class="layui-col-md5"  id="test" style="height:525px">
+                <div   style="border: 1px solid #E6E6E6;box-shadow: #E6E6E6 1px 1px 1px 1px;margin: 11px 0 0 0" >
+                    <div class="laui-row"  style="text-align: left;font-weight: bold;font-size: 10px;margin: 10px 5px 5px 5px">
+                        <span>No:</span>
+                        <span id="medicalRecordId2Id" name="medicalRecordId2"></span>
+                    </div>
+                    <div class="laui-row" style="text-align: center;font-weight: bold;font-size: 25px;margin: 5px 0 5px 0">
+                        樱花诊所
+                    </div>
+                    <div class="layui-row">
+                        <div class="laui-row " style="text-align: left;margin: 8px 0 5px 5px">
+                            <div class="layui-inline layui-col-md4 hideTex" >
+                                <span class="recordTitle">卡号:</span>
+                                <span class="recordText" style="font-size: 11px" name="patientId2" id="patientId2Id"></span>
+                            </div>
+                            <div class="layui-inline layui-col-md4">
+                                <span class="recordTitle">挂号时间:</span>
+                                <span class="recordText" name="registerDate2" id="registerDate2Id"></span>
+                            </div>
+                            <div class="layui-inline layui-col-md4">
+                                <span class="recordTitle">接诊时间:</span>
+                                <span class="recordText" name="consultationDate2" id="consultationDate2Id"></span>
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="layui-row">
+                        <div class="laui-row" style="text-align: left;margin: 8px 0 5px 5px">
+                            <div class="layui-inline layui-col-md4 hideTex">
+                                <span class="recordTitle">姓名:</span>
+                                <span class="recordText" name="patientName2" id="patientName2Id"></span>
+                            </div>
+                            <div class="layui-inline layui-col-md2">
+                                <span class="recordTitle">性别:</span>
+                                <span class="recordText" name="sex2" id="sex2Id"></span>
+                            </div>
+                            <div class="layui-inline layui-col-md2">
+                                <span class="recordTitle">年龄:</span>
+                                <span class="recordText" name="birthday2" id="birthday2Id"></span>
+
+                            </div>
+                            <div class="layui-inline layui-col-md4 hideTex">
+                                <span class="recordTitle">科室:</span>
+                                <span class="recordText" name="departmentName2" id="departmentName2Id"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="layui-row">
+                        <div class="laui-row " style="text-align: left;margin: 8px 0 5px 5px">
+                            <div class="layui-inline layui-col-md4 hideTex" >
+                                <span class="recordTitle">血压:</span>
+                                <span class="recordText" name="patientBp2" id="patientBp2Id"></span>
+                                <span class="recordText" >mmHg</span>
+                            </div>
+                            <div class="layui-inline layui-col-md2 hideTex" style="margin: 0px 1px 0px 0px">
+                                <span class="recordTitle">身高:</span>
+                                <span class="recordText" name="patientHeight2" id="patientHeight2Id"></span>
+                                <span class="recordText" >cm</span>
+                            </div>
+                            <div class="layui-inline layui-col-md2 hideTex" >
+                                <span class="recordTitle">体重:</span>
+                                <span class="recordText" name="patientWeight2" id="patientWeight2Id"></span>
+                                <span class="recordText" >kg</span>
+                            </div>
+                            <div class="layui-inline layui-col-md2 hideTex" >
+                                <span class="recordTitle">体温:</span>
+                                <span class="recordText" name="patientTemperature2" id="patientTemperature2Id"></span>
+                                <span class="recordText" >℃</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="layui-row">
+                        <div class="laui-row hideTex" style="text-align: left;margin: 8px 0 5px 5px">
+                            <span class="recordTitle">临床诊断:</span>
+                            <span class="recordText" name="clinicalDiagnosis2" id="clinicalDiagnosis2Id" style="cursor:pointer"></span>
+                        </div>
+                    </div>
+                    <hr class="layui-bg-black">
+                    <div class="laui-row" style="text-align: left;font-weight: bold;font-size: 25px;margin: 0px 0 5px 5px">
+                        Rp:
+                    </div>
+                    <div class="layui-row">
+                        <div class="laui-row" style="text-align: left;margin: 8px 0 5px 5px">
+                            <div class="layui-inline layui-col-md1">
+                                <span class="recordRegsTitle">西药:</span>
+                            </div>
+                            <div class="layui-inline layui-col-md11">
+                                <textarea name="wPrescribe2" id="wPrescribe2Id"  readonly="readonly" class="layui-textarea" style="min-height: 100px;font-size: 12px;border:none;" ></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="layui-row">
+                        <div class="laui-row" style="text-align: left;margin: 8px 0 5px 5px">
+                            <div class="layui-inline layui-col-md1">
+                                <span  class="recordRegsTitle">中药:</span>
+                            </div>
+                            <div class="layui-inline layui-col-md11">
+                                <textarea name="cPrescribe2" id="cPrescribe2Id" readonly="readonly" class="layui-textarea" style="min-height: 100px;font-size: 12px;border:none;" ></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="layui-row">
+                        <div class="laui-row" style="text-align: left;margin: 8px 0 5px 5px">
+                            <div class="layui-inline layui-col-md1">
+                                <span class="recordRegsTitle">治疗:</span>
+                            </div>
+                            <div class="layui-inline layui-col-md11">
+                                <textarea name="projectItem2" id="projectItem2Id"  readonly="readonly" class="layui-textarea" style="min-height: 80px;font-size: 12px;border:none;" ></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <hr class="layui-bg-black">
+                    <div class="layui-row">
+                        <div class="laui-row" style="text-align: left;margin: 3px 0 5px 5px">
+                            <div class="layui-col-md3"  id="doctorNameDiv">
+                                <span class="recordTitle">医师:</span>
+                                <span class="recordText" name="name2" id="name2Id"></span>
+                            </div>
+                            <div class="layui-col-md3 layui-col-md-offset6"  id="endConsultationDiv" style="text-align:right;">
+                                <button class="layui-btn layui-btn-xs" style="background-color: #3CB371;margin: 0 5px 5px 0" id="endConsultationbtn" >结束诊疗</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+<script src="../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
+<script src="../js/lay-config.js?v=1.0.4" charset="utf-8"></script>
+<script>
+    layui.use(['form', 'table','flow','layer', 'element'], function () {
+            var $ = layui.jquery,
+                form = layui.form;
+            var element = layui.element;
+            var layer = layui.layer;
+            var wPrescribeTable = layui.table;
+            var cPrescribeTable=layui.table;
+            var projectTable=layui.table;
+            var historyTable=layui.table;
+            var table = layui.table;
+
+            var medicalRecordDetail=[];//病历信息
+            var medicalRecordCheck=[];// 病历检查信息
+            var patientInfoDetail=[];// 患者病历信息
+            var wMedicineItemDetail=[];// 用于选中的药品信息
+            var cMedicineItemDetail=[];// 中药信息
+            var projectDetail=[];//治疗信息
+
+        $(window).resize(function(){
+            var bodywidth=$('#countDivId').width();
+            var testwidth=$('#test').width();
+            $('#wPrescribeTableDivId').width(bodywidth-testwidth-42);// 西药数据表格
+            $('#cPrescribeTableDivId').width(bodywidth-testwidth-42);// 西药数据表格
+            $('#projectTableDivId').width(bodywidth-testwidth-42);// 治疗单数据表格
+            $('#historyTableDivId').width(bodywidth-testwidth-42);// 治疗单数据表格
+
+        });
+
+        // 加载西药处方单（表格）
+        wPrescribeTable.render({
+            elem: '#wPrescribeTableId', // 绑定的元素
+            id:"wPrescribeTableId",
+            limit:'100',
+            cols:
+                [
+                    [
+                        {field: 'medicinesName', width: 150,fixed: 'left', title: '药品名',event:'detial',style:'cursor: pointer;'},
+                        {field: 'medicinesBarcode',hide:true, width: 120,title: '药品条码',event:'detial',style:'cursor: pointer;'},
+                        {field: 'medicinesSpec', width: 100,title: '制剂规格',event:'detial',style:'cursor: pointer;'},
+                        {field: 'dosageForm', width: 100,title: '药品剂型',event:'detial',style:'cursor: pointer;'},
+                        {field: 'medicinesUnit',hide:true, width: 120,title: '包装单位',event:'detial',style:'cursor: pointer;'},
+                        {field: 'packingSpec', hide:true,width: 120,title: '包装规格',event:'detial',style:'cursor: pointer;'},
+                        {field: 'saleUnit', hide:true,width: 120,title: '销售单位',event:'detial',style:'cursor: pointer;'},
+                        {field: 'wDirection', width: 120,title: '用法',event:'Direction',style:'cursor: pointer;',templet:'#wDirectionTem'},
+                        {field: 'singleDose', width: 120,title: '单次剂量',event:'singleDose',style:'cursor: pointer;',templet:'#singleDoseTem'},
+                        {field: 'frequency', width: 135,title: '用药频次',templet:'#frequencyTem',event:'frequency',style:'cursor: pointer;'},
+                        {field: 'frequencyTimes', width: 150,hide:true,title: '频次次数', templet:'#numberDisplay',event:'detial',style:'cursor: pointer;'},
+                        {field: 'frequencyNumber', width: 150,hide:true,title: '频次数', event:'detial',style:'cursor: pointer;'},
+                        {field: 'duration', width: 120,title: '时长', templet:'#durationTem',event:'duration',style:'cursor: pointer;'},
+                        {field: 'frequencyUnit', hide:true,width: 150,title: '频次单位', templet:'#statusDisplay',event:'detial',style:'cursor: pointer;'},
+                        {field: 'number',width: 120,title: '总量', templet:'#numberTem',event:'detial',style:'cursor: pointer;'},
+                        {field: 'price',width: 120,title: '单价',sort: true, templet:'#priceTem',style:'cursor: pointer;'},
+                        {field: 'wPrescribeInfo',edit: 'text',width: 150,title: '说明', templet:'#statusDisplay',event:'wPrescribeInfo',style:'cursor: pointer;'},
+                        {field: 'active',width: 70,fixed: 'right',title: '操作', templet:'#wPrescribeTableBar',style:'cursor: pointer;'}
+                    ]
+                ],
+            data:
+                [
+
+                ],
+            done:function (res) {
+
+            }
+        });
+
+        // 加载中药处方单（数据表格）
+        cPrescribeTable.render({
+            elem: '#cPrescribeTableId', // 绑定的元素
+            id:"cPrescribeTableId",
+            limit:'100',
+            cols:
+                [
+                    [
+                        {field: 'medicinesName', width: 150,fixed: 'left', title: '药品名',event:'detial',style:'cursor: pointer;'},
+                        //{field: 'medicinesBarcode',hide:true, width: 120,title: '药品条码',event:'detial',style:'cursor: pointer;'},
+                        //{field: 'medicinesSpec', width: 100,title: '制剂规格',event:'detial',style:'cursor: pointer;'},
+                        {field: 'dosageForm', width: 110,title: '药品剂型',event:'detial',style:'cursor: pointer;'},
+                        //{field: 'medicinesUnit',hide:true, width: 120,title: '包装单位',event:'detial',style:'cursor: pointer;'},
+                        //{field: 'packingSpec', hide:true,width: 120,title: '包装规格',event:'detial',style:'cursor: pointer;'},
+                        {field: 'saleUnit', hide:true,width: 100,title: '销售单位',event:'detial',style:'cursor: pointer;'},
+                        {field: 'cDirection',hide:true, width: 120,title: '用法',event:'Direction',style:'cursor: pointer;',templet:'#cDirectionTem'},
+                        {field: 'singleDose', width: 110,title: '单次剂量',event:'singleDose',style:'cursor: pointer;',templet:'#csingleDoseTem'},
+                        {field: 'frequency',hide:true, width: 135,title: '用药频次',templet:'#frequencyTem',event:'frequency',style:'cursor: pointer;'},
+                        //{field: 'frequencyTimes', width: 150,hide:true,title: '频次次数', templet:'#numberDisplay',event:'detial',style:'cursor: pointer;'},
+                        //{field: 'frequencyNumber', width: 150,hide:true,title: '频次数', event:'detial',style:'cursor: pointer;'},
+                        {field: 'duration',hide:true, width: 120,title: '时长', templet:'#durationTem',event:'duration',style:'cursor: pointer;'},
+                        //{field: 'frequencyUnit', hide:true,width: 150,title: '频次单位', templet:'#statusDisplay',event:'detial',style:'cursor: pointer;'},
+                        {field: 'number',width: 110,title: '总量', templet:'#numberTem',event:'detial',style:'cursor: pointer;'},
+                        {field: 'price',width: 110,title: '单价',sort: true, templet:'#priceTem',style:'cursor: pointer;'},
+                        {field: 'cPrescribeInfo',edit: 'text',width: 150,title: '说明', templet:'#statusDisplay',event:'cPrescribeInfo',style:'cursor: pointer;'},
+                        {field: 'active',width: 70,fixed: 'right',title: '操作', templet:'#cPrescribeTableBar',style:'cursor: pointer;'}
+                    ]
+                ],
+            data:
+                [
+
+                ]
+        });
+
+        // 加载治疗单（数据表格）
+        projectTable.render({
+            elem: '#projectTableId', // 绑定的元素
+            id:"projectTableId",
+            limit:'100',
+            cols:
+                [
+                    [
+                        {field: 'projectName', width: 150, title: '治疗项',event:'detial',style:'cursor: pointer;'},
+                        {field: 'number',width: 110,title: '治疗次数',event:'number',style:'cursor: pointer;'},
+                        {field: 'price',width: 110,title: '单价',sort: true, templet:'#priceTem',style:'cursor: pointer;'},
+                        {field: 'projectInfo',edit: 'text',minwidth: 150,title: '说明', templet:'#statusDisplay',event:'cPrescribeInfo',style:'cursor: pointer;'},
+                        {field: 'active',width: 70,title: '操作', templet:'#projectTableBar',style:'cursor: pointer;'}
+                    ]
+                ],
+            data:
+                [
+
+                ]
+        });
+
+        // 加载历史病历（数据表格）
+        historyTable.render({
+            elem: '#historyTableId', // 绑定的元素
+            id:"historyTableId",
+            url: '/showHistoryMRList',
+            limit: 5, // 定义每页显示几条数据
+            limits: [5, 10, 15], // 定义每页条数的选项
+            cols:
+                [
+                    [
+                        {field: 'medicalRecordId', width: 150, title: '病历ID',event:'detial',style:'cursor: pointer;'},
+                        {field: 'consultationDate',width: 150,title: '接诊时间',event:'detial',style:'cursor: pointer;'},
+                        {field: 'patientDescribe',minwidth: 120,title: '患者自述',style:'cursor: pointer;',event:'detial'},
+                        {field: 'clinicalDiagnosis',minwidth: 150,title: '临床诊断',event:'detial',style:'cursor: pointer;'}
+                    ]
+                ],
+            page: { //支持传入laypage组件的所有参数（某些参数除外，如：jump/elem） - 详见文档
+                layout: ['prev', 'page', 'next', 'skip', 'limit', 'count'], //自定义分页布局
+                curr: 1, // 设定初始在第几页
+                groups: 3, //只显示几个连续页码
+                first: false, //显示首页
+                last: false //显示尾页
+            },
+            data:[
+
+            ],
+            where:{
+                patientId:$('#patientIdId').val()
+            }
+        });
+
+        element.on('tab(TabSelect)', function(data){
+            switch (data.index) {
+                case 0:{
+                    break;
+                }
+                case 1:{ // 切换到西药
+                    // 设置表格大小
+                    var bodywidth=$('#countDivId').width();
+                    var testwidth=$('#test').width();
+                    $('#wPrescribeTableDivId').width(bodywidth-testwidth-42);
+                    table.resize('wPrescribeTableId');
+                    break;
+                }
+                case 2:{ // 切换到中药
+                    // 设置表格大小
+                    var bodywidth=$('#countDivId').width();
+                    var testwidth=$('#test').width();
+                    $('#cPrescribeTableDivId').width(bodywidth-testwidth-42);
+                    table.resize('cPrescribeTableId');
+                    break;
+                }
+                case 3:{ // 切换到治疗
+                    var bodywidth=$('#countDivId').width();
+                    var testwidth=$('#test').width();
+                    $('#projectTableDivId').width(bodywidth-testwidth-42);
+                    table.resize('projectTableId');
+                    break;
+                }
+                case 4:{
+                    var bodywidth=$('#countDivId').width();
+                    var testwidth=$('#test').width();
+                    $('#historyTableDivId').width(bodywidth-testwidth-42);
+                    table.resize('historyTableId');
+                    break;
+                }
+
+            }
+
+        });
+
+        // 弹出搜索层(患者主诉)
+        $('#searchForDescribeId').on("click",function () {
+            if($('#searchSeleId').is(':hidden')){
+                $("#searchSeleId").show();
+            }else {
+                $("#searchSeleId").hide();
+            }
+        });
+
+        // 弹出搜索层（临床诊断）
+        $('#searchForDiagnosisId').on("click",function () {
+            if($('#searchSele2Id').is(':hidden')){
+                $("#searchSele2Id").show();
+            }else {
+                $("#searchSele2Id").hide();
+            }
+        });
+
+
+
+        // 分页是前端分页，不是后端分页（患者主诉）
+        var searchSele = xmSelect.render({
+            el: '#searchSeleId',
+            tips: '点此搜索患者主诉',
+            radio: true,
+            clickClose: true,
+            autoRow: true,
+            //配置远程分页
+            paging: true,
+            pageRemote: true,
+            pageSize: 5,
+            pageEmptyShow:false,
+            theme: {
+                color: '#3CB371'
+            },
+            model: {
+                label: {
+                    type: 'text'
+                }
+            },
+            prop: {
+                name: 'patientDescribeText',
+                value: 'patientDescribeId'
+            },
+            empty: '暂无数据',
+            searchTips: '搜索患者描述',
+            filterable: true,
+            remoteSearch: true,
+            on: function(data){
+                var arr=data.arr;
+                //console.log(arr);
+                var isAdd = data.isAdd;
+                if(arr.length!=0){
+                    //console.log(arr[0]['patientDescribeText']);
+                    var str=$('#patientDescribeId').val();
+                    $('#patientDescribeId').val(str+" "+arr[0]['patientDescribeText']+" ");
+                    //$('#patientDescribeId').append(arr[0]['patientDescribeText']+" ");
+                    //$('name2Id').html(arr[0]['patientDescribeText'])
+                }
+            },
+            hide(){
+                $("#searchSeleId").hide();
+                searchSele.setValue([ ]);
+            },
+            remoteMethod: function(val, cb,show, pageIndex){
+                //这里如果val为空, 则不触发搜索
+                if(!val){
+                    return cb([]);
+                }
+
+                //这里引入了一个第三方插件axios, 相当于$.ajax
+                axios({
+                    method: 'get',
+                    url: '/patientDescribe',
+                    params: {
+
+                        str: val,
+                        page:pageIndex,
+                        limit:5
+                    }
+                }).then(function (response){
+                    var trans=response.data['data'];
+                    var count=response.data['count'];
+
+                    //alert(count);
+                    //console.log(trans['data']);
+                    //console.log(pageIndex);
+                    //result=[{"patientDescribeText":result[0]['patientDescribeText'],"patientDescribeId":result[0]['patientDescribeId']}];
+                    cb(trans,count);
+                }).catch(function (err){
+                    cb([],0);
+                });
+            },
+            data: []
+        });
+
+        var searchSele2 = xmSelect.render({
+            el: '#searchSele2Id',
+            tips: '点此搜索临床诊断',
+            radio: true,
+            clickClose: true,
+            autoRow: true,
+            //配置远程分页
+            paging: true,
+            pageRemote: true,
+            pageSize: 5,
+            pageEmptyShow:false,
+            theme: {
+                color: '#3CB371'
+            },
+            model: {
+                label: {
+                    type: 'text'
+                }
+            },
+            prop: {
+                name: 'clinicDiagnosisText',
+                value: 'clinicDiagnosisId'
+            },
+            empty: '暂无数据',
+            searchTips: '搜索临床诊断',
+            filterable: true,
+            remoteSearch: true,
+            on: function(data){
+                var arr=data.arr;
+                //console.log(arr);
+                var isAdd = data.isAdd;
+                if(arr.length!=0){
+                    //console.log(arr[0]['patientDescribeText']);
+                    var str=$('#clinicalDiagnosisId').val();
+                    $('#clinicalDiagnosisId').val(str+" "+arr[0]['clinicDiagnosisText']+" ");
+                    $('#clinicalDiagnosis2Id').html(str+" "+arr[0]['clinicDiagnosisText']+" ");
+                    //$('#patientDescribeId').append(arr[0]['patientDescribeText']+" ");
+                    //$('name2Id').html(arr[0]['patientDescribeText'])
+                }
+            },
+            hide(){
+                $("#searchSele2Id").hide();
+                searchSele2.setValue([ ]);
+
+            },
+            remoteMethod: function(val, cb,show, pageIndex){
+                //这里如果val为空, 则不触发搜索
+                if(!val){
+                    return cb([]);
+                }
+
+                //这里引入了一个第三方插件axios, 相当于$.ajax
+                axios({
+                    method: 'get',
+                    url: '/clinicDiagnosis',
+                    params: {
+
+                        str: val,
+                        page:pageIndex,
+                        limit:5
+                    }
+                }).then(function (response){
+                    var trans=response.data['data'];
+                    var count=response.data['count'];
+
+                    cb(trans,count);
+                }).catch(function (err){
+                    cb([],0);
+                });
+            },
+            data: []
+        });
+
+        // 西药搜索
+        var searchWP=xmSelect.render({
+            el: '#searchWPrescribeId',
+            tips: '点此搜索药品',
+            radio: true,
+            clickClose: true,
+            autoRow: true,
+            //配置远程分页
+            paging: true,
+            pageRemote: true,
+            pageSize: 5,
+            pageEmptyShow:false,
+            theme: {
+                color: '#3CB371'
+            },
+            model: {
+                label: {
+                    type: 'text'
+                }
+            },
+            prop: {
+                name: 'medicinesName',
+                value: 'medicinesId'
+            },
+            empty: '暂无数据',
+            searchTips: '搜索药品',
+            filterable: true,
+            remoteSearch: true,
+            on: function(data){
+                var arr=data.arr;
+                //console.log(arr);
+                var isAdd = data.isAdd;
+                if(arr.length!=0){
+
+                    var dataOld=[]; // 备份数据表格中数据
+                    var tableBak = layui.table.cache['wPrescribeTableId'];// 存储数据表格数据
+                    for (var i = 0; i < tableBak.length; i++) { // 遍历数据表格数据
+                        dataOld.push(tableBak[i]);
+                    }
+                    dataOld.push({ // 新增数据
+                        'medicinesName':arr[0]['medicinesName'],
+                        'medicinesBarcode':arr[0]['medicinesBarcode'],
+                        'medicinesSpec':arr[0]['medicinesSpec'],
+                        'dosageForm':arr[0]['dosageForm'],
+                        'packingSpec':arr[0]['packingSpec'],
+                        'medicinesUnit':arr[0]['medicinesUnit'],
+                        'saleUnit':arr[0]['saleUnit'],
+                        'wDirection':'',
+                        'singleDose':'',
+                        'frequency':"",
+                        'frequencyTimes':"",
+                        'frequencyNumber':"",
+                        'duration':"",
+                        'frequencyUnit':"",
+                        'number':"",
+                        'price':arr[0]['price'],
+                        'wPrescribeInfo':""
+                    });
+                    table.reload("wPrescribeTableId",{
+                        data:dataOld   // 将新数据重新载入表格
+                    });
+
+                    // $('#patientDescribeId').val(str+" "+arr[0]['patientDescribeText']+" ");
+                    //$('#patientDescribeId').append(arr[0]['patientDescribeText']+" ");
+                    //$('name2Id').html(arr[0]['patientDescribeText'])
+                }
+            },
+            hide(){
+                //$("#searchWPrescribeId").hide();
+                searchWP.setValue([ ]);
+                $(document).on("mouseenter", ".xm-option-content",function (data) {
+
+
+                    var text='<div style="word-wrap:break-word;max-width: 200px">\n' +
+                        $(this).html() +
+                        '</div>';
+
+                    layer.tips(text, this, {
+                        tips: [3,'#3CB371'],
+                        time: 1000
+                    });
+                    //console.log(data);
+                });
+
+            },
+            show(){
+                $(document).off('mouseenter', '.xm-option-content');
+            },
+            remoteMethod: function(val, cb,show, pageIndex){
+                //这里如果val为空, 则不触发搜索
+                if(!val){
+                    return cb([]);
+                }
+
+                //这里引入了一个第三方插件axios, 相当于$.ajax
+                axios({
+                    method: 'get',
+                    url: '/medicineItemByEs',
+                    params: {
+                        str: val,
+                        page:pageIndex,
+                        limit:5,
+                        group:'wPrescribe'
+                    }
+                }).then(function (response){
+                    var trans=response.data['data'];
+                    var count=response.data['count'];
+
+                    //alert(count);
+                    //console.log(trans['data']);
+                    //console.log(pageIndex);
+                    //result=[{"patientDescribeText":result[0]['patientDescribeText'],"patientDescribeId":result[0]['patientDescribeId']}];
+                    cb(trans,count);
+                }).catch(function (err){
+                    cb([],0);
+                });
+            },
+            data: []
+        });
+
+        // 中药搜索
+        var searchCP=xmSelect.render({
+            el: '#searchCPrescribeId',
+            tips: '点此搜索中药材',
+            radio: true,
+            clickClose: true,
+            autoRow: true,
+            //配置远程分页
+            paging: true,
+            pageRemote: true,
+            pageSize: 5,
+            pageEmptyShow:false,
+            theme: {
+                color: '#3CB371'
+            },
+            model: {
+                label: {
+                    type: 'text'
+                }
+            },
+            prop: {
+                name: 'medicinesName',
+                value: 'medicinesId'
+            },
+            empty: '暂无数据',
+            searchTips: '搜索药材',
+            filterable: true,
+            remoteSearch: true,
+            on: function(data){
+                var arr=data.arr;
+                //console.log(arr);
+                var isAdd = data.isAdd;
+                if(arr.length!=0){
+
+                    var dataOld=[]; // 备份数据表格中数据
+                    var tableBak = layui.table.cache['cPrescribeTableId'];// 存储数据表格数据
+                    for (var i = 0; i < tableBak.length; i++) { // 遍历数据表格数据
+                        if(tableBak[i]!=""){
+                            dataOld.push(tableBak[i]);
+                        }
+                    }
+                    dataOld.push({ // 新增数据
+                        'medicinesName':arr[0]['medicinesName'],
+                        //'medicinesBarcode':arr[0]['medicinesBarcode'],
+                        'medicinesSpec':arr[0]['medicinesSpec'],
+                        'dosageForm':arr[0]['dosageForm'],
+                        //'packingSpec':arr[0]['packingSpec'],
+                        //'medicinesUnit':arr[0]['medicinesUnit'],
+                        'saleUnit':arr[0]['saleUnit'],
+                        'cDirection':'',
+                        'singleDose':'',
+                        'frequency':"",//频次
+                        //'frequencyTimes':"",
+                        //'frequencyNumber':"",
+                        'duration':"",//时长
+                        //'frequencyUnit':"",
+                        'number':"",//总量
+                        'price':arr[0]['price'],
+                        'cPrescribeInfo':""
+                    });
+                    table.reload("cPrescribeTableId",{
+                        data:dataOld   // 将新数据重新载入表格
+                    });
+
+                    // $('#patientDescribeId').val(str+" "+arr[0]['patientDescribeText']+" ");
+                    //$('#patientDescribeId').append(arr[0]['patientDescribeText']+" ");
+                    //$('name2Id').html(arr[0]['patientDescribeText'])
+                }
+            },
+            hide(){
+                //$("#searchWPrescribeId").hide();
+                searchCP.setValue([ ]);
+                $(document).on("mouseenter", ".xm-option-content",function (data) {
+
+                    var text='<div style="word-wrap:break-word;max-width: 200px">\n' +
+                        $(this).html() +
+                        '</div>';
+
+                    layer.tips(text, this, {
+                        tips: [3,'#3CB371'],
+                        time: 1000
+                    });
+                    //console.log(data);
+                });
+
+            },
+            show(){
+                $(document).off('mouseenter', '.xm-option-content');
+            },
+            remoteMethod: function(val, cb,show, pageIndex){
+                //这里如果val为空, 则不触发搜索
+                if(!val){
+                    return cb([]);
+                }
+
+                //这里引入了一个第三方插件axios, 相当于$.ajax
+                axios({
+                    method: 'get',
+                    url: '/medicineItemByEs',
+                    params: {
+                        str: val,
+                        page:pageIndex,
+                        limit:5,
+                        group:'cPrescribe'
+                    }
+                }).then(function (response){
+                    var trans=response.data['data'];
+                    var count=response.data['count'];
+                    cb(trans,count);
+                }).catch(function (err){
+                    cb([],0);
+                });
+            },
+            data: []
+        });
+
+        // 治疗单搜索
+        var searchProject=xmSelect.render({
+            el: '#searchProjectId',
+            tips: '点此搜索治疗项',
+            radio: true,
+            clickClose: true,
+            autoRow: true,
+            //配置远程分页
+            paging: true,
+            pageRemote: true,
+            pageSize: 5,
+            pageEmptyShow:false,
+            theme: {
+                color: '#3CB371'
+            },
+            model: {
+                label: {
+                    type: 'text'
+                }
+            },
+            prop: {
+                name: 'projectName',
+                value: 'projectItemId'
+            },
+            empty: '暂无数据',
+            searchTips: '搜索治疗项',
+            filterable: true,
+            remoteSearch: true,
+            on: function(data){
+                var arr=data.arr;
+                //console.log(arr);
+                var isAdd = data.isAdd;
+                if(arr.length!=0){
+
+                    var dataOld=[]; // 备份数据表格中数据
+                    var tableBak = layui.table.cache['projectTableId'];// 存储数据表格数据
+                    for (var i = 0; i < tableBak.length; i++) { // 遍历数据表格数据
+                        if(tableBak[i]!=""){
+                            dataOld.push(tableBak[i]);
+                        }
+                    }
+                    dataOld.push({ // 新增数据
+                        'projectName':arr[0]['projectName'],
+                        'number':"",//次数
+                        'price':arr[0]['price'],
+                        'projectInfo':""
+                    });
+                    table.reload("projectTableId",{
+                        data:dataOld   // 将新数据重新载入表格
+                    });
+
+                }
+            },
+            hide(){
+
+                searchProject.setValue([ ]);
+                $(document).on("mouseenter", ".xm-option-content",function (data) {
+
+                    var text='<div style="word-wrap:break-word;max-width: 200px">\n' +
+                        $(this).html() +
+                        '</div>';
+
+                    layer.tips(text, this, {
+                        tips: [3,'#3CB371'],
+                        time: 1000
+                    });
+                    //console.log(data);
+                });
+
+            },
+            show(){
+                $(document).off('mouseenter', '.xm-option-content');
+            },
+            remoteMethod: function(val, cb,show, pageIndex){
+                //这里如果val为空, 则不触发搜索
+                if(!val){
+                    return cb([]);
+                }
+
+                //这里引入了一个第三方插件axios, 相当于$.ajax
+                axios({
+                    method: 'get',
+                    url: '/projectItemByEs',
+                    params: {
+                        str: val,
+                        page:pageIndex,
+                        limit:5
+                    }
+                }).then(function (response){
+                    var trans=response.data['data'];
+                    var count=response.data['count'];
+                    cb(trans,count);
+                }).catch(function (err){
+                    cb([],0);
+                });
+            },
+            data: []
+        });
+
+        // 中药服法搜索
+        var searchCD=xmSelect.render({
+            el: '#searchCDirectionId',
+            tips: '点此搜索中药服法',
+            radio: true,
+            clickClose: true,
+            paging: true,
+            pageRemote: true,
+            pageSize: 3,
+            pageEmptyShow:false,
+            prop: {
+                name: 'cDirectionText',
+                value: 'id'
+            },
+            empty: '暂无数据',
+            searchTips: '检索用法',
+            filterable: true,
+            remoteSearch: true,
+            theme: {
+                color: '#3CB371'
+            },
+            model: {
+                label: {
+                    type: 'text'
+                }
+            },
+            on : function(data){
+                var arr=data.arr;
+                //console.log(arr);
+                var isAdd = data.isAdd;
+                if(arr.length!=0){
+                    // 更新data同时更新缓存
+                    //var dataOld=[]; // 备份数据表格中数据
+                    var tableBak = layui.table.cache['cPrescribeTableId'];// 存储数据表格数据
+                    // 遍历表格，填充中药服法
+                    for(var i = 0; i < tableBak.length; i++){
+                        if(tableBak[i]!=""){
+                            tableBak[i]['cDirection']=arr[0]['cDirectionText'];
+                        }
+                    }
+
+                    table.reload("cPrescribeTableId",{
+                        data:tableBak   // 将新数据重新载入表格
+                    });
+                    //console.log(obj);
+                }
+            },
+            hide(){
+                //$("#searchWPrescribeId").hide();
+                //searchCD.setValue([ ]);
+                $(document).on("mouseenter", ".xm-option-content",function (data) {
+
+
+                    var text='<div style="word-wrap:break-word;max-width: 200px">\n' +
+                        $(this).html() +
+                        '</div>';
+
+                    layer.tips(text, this, {
+                        tips: [3,'#3CB371'],
+                        time: 1000
+                    });
+                    //console.log(data);
+                });
+
+            },
+            show(){
+                $(document).off('mouseenter', '.xm-option-content');
+            },
+            remoteMethod: function(val, cb,show, pageIndex){
+                //这里如果val为空, 则不触发搜索
+                if(!val){
+                    return cb([]);
+                }
+
+                //这里引入了一个第三方插件axios, 相当于$.ajax
+                axios({
+                    method: 'get',
+                    url: '/cDirectionByEs',
+                    params: {
+                        str: val,
+                        page:pageIndex,
+                        limit:3
+                    }
+                }).then(function (response){
+                    var trans=response.data['data'];
+                    var count=response.data['count'];
+                    cb(trans,count);
+                }).catch(function (err){
+                    cb([],0);
+                });
+            },
+            data: []
+        });
+
+        // 中药用药频次搜索
+        var searchCF=xmSelect.render({
+            el: '#searchCFrequencyId',
+            tips: '点此搜索频次',
+            radio: true,
+            clickClose: true,
+            paging: true,
+            pageRemote: true,
+            pageSize: 3,
+            pageEmptyShow:false,
+            prop: {
+                name: 'medicineFrequencyText',
+                value: 'medicineFrequencyId'
+            },
+            empty: '暂无数据',
+            searchTips: '检索频次',
+            filterable: true,
+            remoteSearch: true,
+            theme: {
+                color: '#3CB371'
+            },
+            model: {
+                label: {
+                    type: 'text'
+                }
+            },
+            on : function(data){
+                var arr=data.arr;
+                //console.log("arr");
+                //console.log(obj.tr.attr('data-index'));// 获取当前行标签
+
+                var isAdd = data.isAdd;
+                if(arr.length!=0){
+                    var tableBak = layui.table.cache['cPrescribeTableId'];// 存储数据表格数据
+                    // 遍历表格，填充中药服法
+                    for(var i = 0; i < tableBak.length; i++){
+                        if(tableBak[i]!=""){
+                            tableBak[i]['frequency']=arr[0]['medicineFrequencyText'];
+                        }
+                    }
+
+                    table.reload("cPrescribeTableId",{
+                        data:tableBak   // 将新数据重新载入表格
+                    });
+                }
+            },
+            hide(){
+                //searchCF.setValue([ ]);
+                $(document).on("mouseenter", ".xm-option-content",function (data) {
+                    var text='<div style="word-wrap:break-word;max-width: 200px">\n' +
+                        $(this).html() +
+                        '</div>';
+                    layer.tips(text, this, {
+                        tips: [3,'#3CB371'],
+                        time: 1000
+                    });
+                });
+
+
+            },
+            show(){
+                $(document).off('mouseenter', '.xm-option-content');
+            },
+            remoteMethod: function(val, cb,show, pageIndex){
+                //这里如果val为空, 则不触发搜索
+                if(!val){
+                    return cb([]);
+                }
+
+                //这里引入了一个第三方插件axios, 相当于$.ajax
+                axios({
+                    method: 'get',
+                    url: '/searchMedicineFrequency',
+                    params: {
+                        medicineFrequencyCode: val,
+                        page:pageIndex,
+                        limit:3
+                    }
+                }).then(function (response){
+                    var trans=response.data['data'];
+                    var count=response.data['count'];
+                    cb(trans,count);
+                }).catch(function (err){
+                    cb([],0);
+                });
+            },
+            data: []
+        });
+
+
+
+        // 搜索框鼠标移入事件
+        $(document).on("mouseenter", ".xm-option-content",function (data) {
+
+
+            var text='<div style="word-wrap:break-word;max-width: 200px">\n' +
+                $(this).html() +
+                '</div>';
+
+            layer.tips(text, this, {
+                tips: [3,'#3CB371'],
+                time: 1000
+            });
+            //console.log(data);
+        });
+
+        // 临床描述
+        $(document).on("mouseenter", "#clinicalDiagnosis2Id",function () {
+
+            var text='<div style="word-wrap:break-word;max-width: 400px;color: black">\n' +
+                $(this).html() +
+                '</div>';
+
+            layer.tips(text, this, {
+                tips: [3,'#FEF7E0'],
+                time: 1000
+            });
+            //console.log();
+        });
+
+
+        // 临床诊断联动
+        $('#clinicalDiagnosisId').on("input onpropertychange",function () {
+            var str=$('#clinicalDiagnosisId').val();
+            $('#clinicalDiagnosis2Id').html(str);
+            //alert("11");
+        });
+
+        // 身高联动
+        $('#patientHeightId').on("input onpropertychange",function () {
+            var str=$('#patientHeightId').val();
+            $('#patientHeight2Id').html(str);
+            //alert("11");
+        });
+
+        // 体重
+        $('#patientWeightId').on("input onpropertychange",function () {
+            var str=$('#patientWeightId').val();
+            $('#patientWeight2Id').html(str);
+            //alert("11");
+        });
+
+        // 体温
+        $('#patientTemperatureId').on("input onpropertychange",function () {
+            var str=$('#patientTemperatureId').val();
+            $('#patientTemperature2Id').html(str);
+            //alert("11");
+        });
+
+        // 血压
+        $('#patientBpId').on("input onpropertychange",function () {
+            var str=$('#patientBpId').val();
+            $('#patientBp2Id').html(str);
+            //alert("11");
+        });
+
+        // 封装函数，时间戳格式化函数
+        function timestampToTime() {
+            //时间戳为10位需*1000，时间戳为13位的话不需乘1000
+            var date = new Date();
+            Y = date.getFullYear() + '-';
+            M = (date.getMonth()+1 < 10 ? '0'+(date.getMonth()+1) : date.getMonth()+1) + '-';
+            D = date.getDate() + ' ';
+            h = date.getHours() + ':';
+            m = date.getMinutes() + ':';
+            s = date.getSeconds();
+            return Y+M+D+h+m+s;
+        }
+
+        // 封装函数，时间戳格式化函数
+        function timestamp(timestamp) {
+            //时间戳为10位需*1000，时间戳为13位的话不需乘1000
+            var date = new Date(timestamp);
+            Y = date.getFullYear() + '-';
+            M = (date.getMonth()+1 < 10 ? '0'+(date.getMonth()+1) : date.getMonth()+1) + '-';
+            D = date.getDate() + '';
+            h = date.getHours() + ':';
+            m = date.getMinutes() + ':';
+            s = date.getSeconds();
+            return Y+M+D;
+        }
+
+
+        // 保存患者病历页
+        form.on('submit(medicalRecordBtn)', function (data) {
+            //console.log(data.field);
+            var result=data.field;
+            var date = new Date();
+            var consultationDate=date;// 接诊时间
+            var medicalRecordId=$('#medicalRecordId2Id').text();// 病历ID
+            var patientId=$('#patientIdId').val();
+
+            var medicalRecord={
+                "patientDescribe":result['patientDescribe'],
+                "clinicalDiagnosis":result['clinicalDiagnosis'],
+                "consultationDate":consultationDate,
+                "medicalRecordId":medicalRecordId};
+
+            var medicalCheck={"patientHeight":result['patientHeight'],
+                "patientTemperature":result['patientTemperature'],
+                "patientWeight":result['patientWeight'],
+                "patientBp":result['patientBp']};
+
+            var patientInfo={"patientId":patientId,"chronic":result['chronic'],
+                "familyMedicalHistory":result['familyMedicalHistory'],
+                "allergies":result['allergies']};
+
+            medicalRecordDetail=[]; // 存入病历表相关信息
+            patientInfoDetail=[];
+            medicalRecordCheck=[];
+
+            medicalRecordDetail.push(medicalRecord); // 存入病历表相关信息
+            patientInfoDetail.push(patientInfo); // 存入患者信息表相关信息
+            medicalRecordCheck.push(medicalCheck);// 检查信息
+            // patientHeight: "175"
+            // patientTemperature: "36.5"
+            // patientDescribe: "咳嗽"
+            // clinicalDiagnosis: "1"
+            // patientWeight: "55"
+            // patientBp: ""
+
+            // chronic: "暂无"
+            // familyMedicalHistory: "暂无"
+            // allergies: "青霉素"
+            //console.log(medicalRecordDetail);
+            //console.log(Object.prototype.toString.call(medicalRecordDetail));
+            //console.log(Object.prototype.toString.call(patientInfo));
+            // 提交而不跳转
+            return false;
+        });
+
+        // 保存西药处方
+        form.on('submit(wPrescribeBtn)', function (data) {
+            //console.log(data.field);
+            wMedicineItemDetail=[];
+
+            $('#wPrescribe2Id').val("");
+            var str="";
+            var tableBak = layui.table.cache['wPrescribeTableId']; // 获取数据表格当前页数据
+            for(var i = 0; i < tableBak.length; i++){
+                if(tableBak[i]!=""){
+                    wMedicineItemDetail.push(tableBak[i]);
+                    // 右边预览
+                    str=str+tableBak[i]['medicinesName']+"\n【用法】"+tableBak[i]['wDirection']+"  【频率】"+tableBak[i]['frequency']+"  【单次剂量】"+tableBak[i]['singleDose']+tableBak[i]['medicinesUnit']+" 【时长】"+tableBak[i]['duration']+tableBak[i]['frequencyUnit']+"\n";
+                }
+            }
+            $('#wPrescribe2Id').val(str);
+           // console.log(wMedicineItemDetail);
+            //console.log(Object.prototype.toString.call(cMedicineItemDetail));
+            // 提交而不跳转
+            return false;
+        });
+
+        // 保存中药处方
+        form.on('submit(cPrescribeBtn)', function (data) {
+            //console.log(data.field);
+            cMedicineItemDetail=[];
+
+            $('#cPrescribe2Id').val("");
+            var str="";
+            var use="";//用法
+            var fre="";//频率
+            var dru="";// 剂数
+            var times=0;// 计次
+            var tableBak = layui.table.cache['cPrescribeTableId']; // 获取数据表格当前页数据
+            for(var i = 0; i < tableBak.length; i++){
+                if(tableBak[i]!=""){
+                    times++;
+                    cMedicineItemDetail.push(tableBak[i]);
+                    // 右边预览
+                    use=tableBak[i]['cDirection'];
+                    fre=tableBak[i]['frequency'];
+                    dru=tableBak[i]['duration'];
+                    str=str+"【"+tableBak[i]['medicinesName']+" x"+tableBak[i]['singleDose']+""+tableBak[i]['saleUnit']+"】  ";
+                    if(times%3==0){
+                        str=str+"\n";
+                    }
+                }
+            }
+            if(times!=0){
+                str=str+"\n"+"【用法】:"+use+" 【频次】: "+fre+"【剂数】: "+dru;
+            }
+
+            $('#cPrescribe2Id').val(str);
+            //console.log(cMedicineItemDetail);
+            //console.log(Object.prototype.toString.call(cMedicineItemDetail));
+
+            // 提交而不跳转
+            return false;
+        });
+
+        // 保存治疗单
+        form.on('submit(projectBtn)',function (data) {
+
+            projectDetail=[];
+            $('#projectItem2Id').val("");
+            var str="";
+            var tableBak = layui.table.cache['projectTableId']; // 获取数据表格当前页数据
+            for(var i = 0; i < tableBak.length; i++){
+                if(tableBak[i]!=""){
+                    projectDetail.push(tableBak[i]);
+                    // 右边预览
+                    str=str+tableBak[i]['projectName']+" 【 次数: "+tableBak[i]['number']+" 】\n";
+                }
+            }
+            $('#projectItem2Id').val(str);
+            //console.log(projectDetail);
+            return false;
+
+        });
+
+        // 西药数据表格数据操作
+        table.on('tool(wPrescribeTableFilter)', function (obj) {
+            if(obj.event === 'delete'){
+                //alert(11);
+                obj.del();
+            }else if(obj.event==='Direction'){
+                //alert(11);
+                //console.log(obj);
+                layer.open({
+                    type: 1,
+                    closeBtn: 0, //不显示关闭按钮
+                    shadeClose: true, //开启遮罩关闭
+                    anim: 2,
+                    offset: '100px',
+                    title: '用法检索',
+                    area:['300px','100px'],
+                    content: '<div id="wDirectionSearch" class="xm-select-demo-alert" style="width: 200px;padding: 10px 0px 10px 50px"></div>',
+                    success: function(layero, index){
+                        //这里因为内容过少, 会被遮挡, 所以简单修改了下样式
+
+                        document.getElementById('layui-layer' + index).getElementsByClassName('layui-layer-content')[0].style.overflow = 'unset';
+                        //渲染多选
+                        var wDirectionSearch = xmSelect.render({
+                            el: '#wDirectionSearch',
+                            tips: '点此搜索用法',
+                            radio: true,
+                            clickClose: true,
+                            paging: true,
+                            pageRemote: true,
+                            pageSize: 3,
+                            pageEmptyShow:false,
+                            prop: {
+                                name: 'wDirectionText',
+                                value: 'id'
+                            },
+                            empty: '暂无数据',
+                            searchTips: '检索用法',
+                            filterable: true,
+                            remoteSearch: true,
+                            theme: {
+                                color: '#3CB371'
+                            },
+                            model: {
+                                label: {
+                                    type: 'text'
+                                }
+                            },
+                            on : function(data){
+                                var arr=data.arr;
+                                //console.log(arr);
+                                var isAdd = data.isAdd;
+                                if(arr.length!=0){
+                                    // 更新data同时更新缓存
+                                    //var dataOld=[]; // 备份数据表格中数据
+                                    var tableBak = layui.table.cache['wPrescribeTableId'];// 存储数据表格数据
+                                    var index=obj.tr.attr('data-index');
+                                    tableBak[index]['wDirection']=arr[0]['wDirectionText'];
+                                    obj.update({
+                                        wDirection: arr[0]['wDirectionText']
+                                    });
+                                    //console.log(tableBak[index]['wDirection']);
+                                    table.reload("wPrescribeTableId",{
+                                        data:tableBak   // 将新数据重新载入表格
+                                    });
+                                    //console.log(obj);
+                                }
+                            },
+                            hide(){
+                                //$("#searchWPrescribeId").hide();
+                                searchWP.setValue([ ]);
+                                $(document).on("mouseenter", ".xm-option-content",function (data) {
+
+
+                                    var text='<div style="word-wrap:break-word;max-width: 200px">\n' +
+                                        $(this).html() +
+                                        '</div>';
+
+                                    layer.tips(text, this, {
+                                        tips: [3,'#3CB371'],
+                                        time: 1000
+                                    });
+                                    //console.log(data);
+                                });
+
+                            },
+                            show(){
+                                $(document).off('mouseenter', '.xm-option-content');
+                            },
+                            remoteMethod: function(val, cb,show, pageIndex){
+                                //这里如果val为空, 则不触发搜索
+                                if(!val){
+                                    return cb([]);
+                                }
+
+                                //这里引入了一个第三方插件axios, 相当于$.ajax
+                                axios({
+                                    method: 'get',
+                                    url: '/wDirectionByEs',
+                                    params: {
+                                        str: val,
+                                        page:pageIndex,
+                                        limit:3
+                                    }
+                                }).then(function (response){
+                                    var trans=response.data['data'];
+                                    var count=response.data['count'];
+                                    cb(trans,count);
+                                }).catch(function (err){
+                                    cb([],0);
+                                });
+                            },
+                            data: []
+                        });
+
+                    },
+                    end:function(){
+                        calculateNumber(obj);
+                    }
+                });
+            }else if(obj.event==='singleDose'){
+               // 此次剂量弹框
+                // console.log(obj);
+                layer.open({
+                    type: 1,
+                    closeBtn: 0, //不显示关闭按钮
+                    shadeClose: true, //开启遮罩关闭
+                    anim: 2,
+                    offset: '100px',
+                    title: '单次剂量',
+                    area:['300px','100px'],
+                    content: '<div id="singleDoseLayerDiv" class="" style="width: 200px;padding: 10px 0px 10px 50px">'+
+                        '<input type="text" id="singleDoseLayerInputId" autocomplete="off" placeholder="'+
+                        obj.data['medicinesUnit']+
+                        '" class="layui-input">'+
+                        '</div>',
+                    success: function(layero, index){
+                        //这里因为内容过少, 会被遮挡, 所以简单修改了下样式
+                        // 弹出即聚焦
+                        //$('#singleDoseLayerInputId').focus();
+                        document.getElementById('layui-layer' + index).getElementsByClassName('layui-layer-content')[0].style.overflow = 'unset';
+                        //渲染多选
+                        $('#singleDoseLayerInputId').on("input onpropertychange",function () {
+                            var str=$('#singleDoseLayerInputId').val();
+                            obj.update({
+                                singleDose: str
+                            });
+                            var tableBak = layui.table.cache['wPrescribeTableId'];// 存储数据表格数据
+                            var index=obj.tr.attr('data-index');
+                            tableBak[index]['singleDose']=str;
+
+                            //console.log(tableBak[index]['wDirection']);
+                            table.reload("wPrescribeTableId",{
+                                data:tableBak   // 将新数据重新载入表格
+                            });
+                            //alert("11");
+                        });
+
+                    },
+                    end:function(){
+                        calculateNumber(obj);
+                    }
+                });
+            }else if(obj.event==='frequency'){
+                layer.open({
+                    type: 1,
+                    closeBtn: 0, //不显示关闭按钮
+                    shadeClose: true, //开启遮罩关闭
+                    anim: 2,
+                    offset: '100px',
+                    title: '频次检索',
+                    area:['300px','100px'],
+                    content: '<div id="medicineFrequencySearch" class="xm-select-demo-alert" style="width: 200px;padding: 10px 0px 10px 50px"></div>',
+                    success: function(layero, index){
+                        //这里因为内容过少, 会被遮挡, 所以简单修改了下样式
+
+                        document.getElementById('layui-layer' + index).getElementsByClassName('layui-layer-content')[0].style.overflow = 'unset';
+                        //渲染多选
+                        var medicineFrequencySearch = xmSelect.render({
+                            el: '#medicineFrequencySearch',
+                            tips: '点此搜索频次',
+                            radio: true,
+                            clickClose: true,
+                            paging: true,
+                            pageRemote: true,
+                            pageSize: 3,
+                            pageEmptyShow:false,
+                            prop: {
+                                name: 'medicineFrequencyText',
+                                value: 'medicineFrequencyId'
+                            },
+                            empty: '暂无数据',
+                            searchTips: '检索频次',
+                            filterable: true,
+                            remoteSearch: true,
+                            theme: {
+                                color: '#3CB371'
+                            },
+                            model: {
+                                label: {
+                                    type: 'text'
+                                }
+                            },
+                            on : function(data){
+                                var arr=data.arr;
+                                //console.log("arr");
+                                //console.log(obj.tr.attr('data-index'));// 获取当前行标签
+
+                                var isAdd = data.isAdd;
+                                if(arr.length!=0){
+                                    obj.update({
+                                        frequency: ""+arr[0]['medicineFrequencyText'],
+                                        frequencyTimes: ""+arr[0]['frequencyTimes'],
+                                        frequencyNumber: ""+arr[0]['frequencyNumber'],
+                                        frequencyUnit: ""+arr[0]['frequencyUnit']
+                                    });
+                                    var tableBak = layui.table.cache['wPrescribeTableId'];// 存储数据表格数据
+                                    var index=obj.tr.attr('data-index');
+                                    tableBak[index]['medicineFrequencyText']=arr[0]['medicineFrequencyText'];
+                                    tableBak[index]['frequencyTimes']=arr[0]['frequencyTimes'];
+                                    tableBak[index]['frequencyNumber']=arr[0]['frequencyNumber'];
+                                    tableBak[index]['frequencyUnit']=arr[0]['frequencyUnit'];
+                                    //console.log(tableBak[index]['wDirection']);
+                                    table.reload("wPrescribeTableId",{
+                                        data:tableBak   // 将新数据重新载入表格
+                                    });
+                                    //console.log(obj);
+                                }
+                            },
+                            hide(){
+                                searchWP.setValue([ ]);
+                                $(document).on("mouseenter", ".xm-option-content",function (data) {
+                                    var text='<div style="word-wrap:break-word;max-width: 200px">\n' +
+                                        $(this).html() +
+                                        '</div>';
+                                    layer.tips(text, this, {
+                                        tips: [3,'#3CB371'],
+                                        time: 1000
+                                    });
+                                });
+
+
+                            },
+                            show(){
+                                $(document).off('mouseenter', '.xm-option-content');
+                            },
+                            remoteMethod: function(val, cb,show, pageIndex){
+                                //这里如果val为空, 则不触发搜索
+                                if(!val){
+                                    return cb([]);
+                                }
+
+                                //这里引入了一个第三方插件axios, 相当于$.ajax
+                                axios({
+                                    method: 'get',
+                                    url: '/searchMedicineFrequency',
+                                    params: {
+                                        medicineFrequencyCode: val,
+                                        page:pageIndex,
+                                        limit:3
+                                    }
+                                }).then(function (response){
+                                    var trans=response.data['data'];
+                                    var count=response.data['count'];
+                                    cb(trans,count);
+                                }).catch(function (err){
+                                    cb([],0);
+                                });
+                            },
+                            data: []
+                        });
+                    },
+                    end:function () {
+                        calculateNumber(obj);
+                    }
+                });
+
+            }else if(obj.event==='duration'){
+                layer.open({
+                    type: 1,
+                    closeBtn: 0, //不显示关闭按钮
+                    shadeClose: true, //开启遮罩关闭
+                    anim: 2,
+                    offset: '100px',
+                    title: '用药时间',
+                    area:['300px','100px'],
+                    content: '<div id="durationLayerDiv" class="" style="width: 200px;padding: 10px 0px 10px 50px">'+
+                        '<input type="text" id="durationLayerInputId" autocomplete="off" placeholder="'+
+                        obj.data['frequencyUnit']+
+                        '" class="layui-input">'+
+                        '</div>',
+                    success: function(layero, index){
+                        //这里因为内容过少, 会被遮挡, 所以简单修改了下样式
+                        // 弹出即聚焦
+                        //$('#singleDoseLayerInputId').focus();
+                        document.getElementById('layui-layer' + index).getElementsByClassName('layui-layer-content')[0].style.overflow = 'unset';
+                        //渲染多选
+                        $('#durationLayerInputId').on("input onpropertychange",function () {
+                            var str=$('#durationLayerInputId').val();
+                            obj.update({
+                                duration: str
+                            });
+                            var tableBak = layui.table.cache['wPrescribeTableId'];// 存储数据表格数据
+                            var index=obj.tr.attr('data-index');
+                            tableBak[index]['duration']= str;
+
+                            //console.log(tableBak[index]['wDirection']);
+                            table.reload("wPrescribeTableId",{
+                                data:tableBak   // 将新数据重新载入表格
+                            });
+                            //alert("11");
+                        });
+
+                    },
+                    end:function(){
+                        calculateNumber(obj);
+                    }
+                });
+            }
+        });
+
+        // 计算西药品量
+        function calculateNumber(obj){
+            // 计算单件药品总量
+            // （时长/频次数）*频次次数
+            // （duration/frequencyNumber）*frequencyTimes
+            //   packingSpec包装规格
+            var tableBak = layui.table.cache['wPrescribeTableId'];// 存储数据表格数据
+            var index=obj.tr.attr('data-index');
+            var duration=tableBak[index]['duration'];
+            var frequencyNumber=tableBak[index]['frequencyNumber'];
+            var frequencyTimes=tableBak[index]['frequencyTimes'];
+            var singleDose=tableBak[index]['singleDose'];
+            var packingSpec=tableBak[index]['packingSpec'];
+            var number;
+            if(duration!="" && frequencyNumber!="" && singleDose!=""){
+                // 向上取整，求出总量
+                number=Math.ceil(((duration/frequencyNumber)*frequencyTimes*singleDose)/packingSpec);
+                tableBak[index]['number']= number;
+                obj.update({
+                    number: number
+                });
+                table.reload("wPrescribeTableId",{
+                    data:tableBak   // 将新数据重新载入表格
+                });
+            }
+
+        }
+
+        // 中药数据表格操作
+        table.on('tool(cPrescribeTableFilter)', function (obj) {
+            if(obj.event === 'delete'){
+                //alert(11);
+                obj.del();
+            }else if(obj.event==='singleDose'){
+                layer.open({
+                    type: 1,
+                    closeBtn: 0, //不显示关闭按钮
+                    shadeClose: true, //开启遮罩关闭
+                    anim: 2,
+                    offset: '100px',
+                    title: '单次剂量',
+                    area:['300px','100px'],
+                    content: '<div id="singleDoseLayerDiv" class="" style="width: 200px;padding: 10px 0px 10px 50px">'+
+                        '<input type="text" id="singleDoseLayerInputId" autocomplete="off" placeholder="'+
+                        obj.data['saleUnit']+
+                        '" class="layui-input">'+
+                        '</div>',
+                    success: function(layero, index){
+                        //这里因为内容过少, 会被遮挡, 所以简单修改了下样式
+                        // 弹出即聚焦
+                        //$('#singleDoseLayerInputId').focus();
+                        document.getElementById('layui-layer' + index).getElementsByClassName('layui-layer-content')[0].style.overflow = 'unset';
+                        //渲染多选
+                       // var doseInput=$('#inputCNumberId').val();//剂数
+                        // 服法
+                        //var cdir=$('searchCFrequencyId').val();
+                        //console.log("fuf");
+                        //console.log(cdir);
+                        // 频率
+                        $('#singleDoseLayerInputId').on("input onpropertychange",function () {
+                            var str=$('#singleDoseLayerInputId').val();
+                            obj.update({
+                                singleDose: str
+                            });
+                            var tableBak = layui.table.cache['cPrescribeTableId'];// 存储数据表格数据
+                            var index=obj.tr.attr('data-index');
+                            tableBak[index]['singleDose']=str;
+
+                            // 如果剂数，服法，频次不为空，填充
+                            //if(searchCFrequencyId)
+
+                            //console.log(tableBak[index]['wDirection']);
+                            table.reload("cPrescribeTableId",{
+                                data:tableBak   // 将新数据重新载入表格
+                            });
+                            //alert("11");
+                        });
+
+                    },
+                    end:function(){
+
+                    }
+                });
+            }
+        });
+
+        // 剂数计算
+        $('#inputCNumberId').on("input onpropertychange",function () {
+            var str=$('#inputCNumberId').val();
+            var tableBak = layui.table.cache['cPrescribeTableId']; // 获取数据表格当前页数据
+            for(var i = 0; i < tableBak.length; i++){
+                if(tableBak[i]!=""){
+                    tableBak[i]['duration']=str;
+                    if(tableBak[i]['singleDose']!=""){
+                        tableBak[i]['number']=tableBak[i]['singleDose']*str;
+                    }
+                }
+            }
+            table.reload("cPrescribeTableId",{
+                data:tableBak   // 将新数据重新载入表格
+            });
+        });
+
+        // 治疗单数据表格操作
+        table.on('tool(projectTableFilter)',function (obj) {
+            if(obj.event === 'delete'){
+                //alert(11);
+                obj.del();
+            }else if(obj.event === 'number'){
+                layer.open({
+                    type: 1,
+                    closeBtn: 0, //不显示关闭按钮
+                    shadeClose: true, //开启遮罩关闭
+                    anim: 2,
+                    offset: '100px',
+                    title: '治疗次数',
+                    area:['300px','100px'],
+                    content: '<div id="projectNumberLayerDiv" class="" style="width: 200px;padding: 10px 0px 10px 50px">'+
+                        '<input type="text" id="projectNumberLayerInputId" autocomplete="off" placeholder="次" class="layui-input">'+
+                        '</div>',
+                    success: function(layero, index){
+                        //这里因为内容过少, 会被遮挡, 所以简单修改了下样式
+                        // 弹出即聚焦
+                        document.getElementById('layui-layer' + index).getElementsByClassName('layui-layer-content')[0].style.overflow = 'unset';
+                        $('#projectNumberLayerInputId').on("input onpropertychange",function () {
+                            var str=$('#projectNumberLayerInputId').val();
+                            obj.update({
+                                number: str
+                            });
+                            var tableBak = layui.table.cache['projectTableId'];// 存储数据表格数据
+                            var index=obj.tr.attr('data-index');
+                            tableBak[index]['number']=str;
+
+                            table.reload("projectTableId",{
+                                data:tableBak   // 将新数据重新载入表格
+                            });
+                            //alert("11");
+                        });
+
+                    },
+                    end:function(){
+
+                    }
+                });
+            }
+        });
+
+        // 历史病历操作
+        table.on('tool(historyTableFilter)',function (obj) {
+            if(obj.event ='detial' ){
+
+                var trans=obj.data;
+                // 通过就诊卡，读取患者基本数据，传递到子页面中
+                var str={"medicalRecordId":trans['medicalRecordId']};
+                console.log(str);
+                $.ajax(
+                    {
+                        url:'/showMedicalDetail',
+                        datatype:'json',
+                        data:str,
+                        type:'get',
+                        success:function (data) {
+                            var result=JSON.parse(data);
+                            //console.log("data"+data);
+                            var medicalRec=result['data']['medicalRecored'];
+                            var patientInfo=result['data']['PatientInfo'][0];
+                            var staffInfos=result['data']['staffInfos'][0];
+                            var staffDepartment=result['data']['staffInfos'][0]['staffDepartment'];
+                            //console.log(staffInfos);
+                            layer.open({
+                                title:"历史病历",
+                                type:2,
+                                shade:0.2,
+                                maxmin:false,
+                                shadeClose:true,
+                                closeBtn: 0,
+                                area:['40%','95%'],
+                                content:['/historyDetail'],
+                                success:function(layero, index){
+                                    var body = layer.getChildFrame('body', index);
+                                    var iframeWin = window[layero.find('iframe')[0]['name']];
+
+                                    $.each(medicalRec,function (key,val) { // 遍历患者病历数据，进行赋值
+                                        if(val!=0){
+
+                                            if(key=='registerDate'||key=='consultationDate'){
+                                                val=timestamp(val);
+                                            }
+
+                                            body.find('#'+key+'3Id').html(val); // 为子元素赋值
+
+
+                                        }
+                                    });
+
+                                    $.each(patientInfo,function (key,val) { // 遍历患者基础数据，进行赋值
+
+                                        if(key=='birthday'){
+                                            val=getAge(val);
+                                        }
+
+                                        body.find('#'+key+'3Id').html(val); // 为子元素赋值
+                                    });
+
+                                    $.each(staffInfos,function (key,val) { // 遍历员工基础数据，进行赋值
+
+                                        body.find('#'+key+'3Id').html(val); // 为子元素赋值
+
+                                    });
+
+                                    $.each(staffDepartment,function (key,val) { // 遍历员工部门基础数据，进行赋值
+
+                                        body.find('#'+key+'3Id').html(val); // 为子元素赋值
+
+                                    });
+                                }
+                            });
+                        }
+                    });
+
+            }
+        });
+
+        // 计算年龄
+        function getAge(age){
+            var ages = '';
+            var birthday = new Date(age);
+            var now=new Date();
+            var day = Math.ceil((now-birthday)/(60*60*1000*24));
+            var year = Math.floor(day/365);
+            var y = day%365;
+            var month = Math.floor(y/30);
+            var d = Math.floor(day%365%30);
+            if(year > 0){
+                ages += year + '岁';
+            }else if(month >0){
+                ages += month + '月';
+            }else if(d>0){
+                ages += (d-1)+'天';
+            }
+            return ages;
+        }
+
+        // 结束诊疗按钮
+        $('#endConsultationbtn').on("click",function (){
+            // medicalRecordDetail;//病历信息
+            // wMedicineItemDetail;// 用于选中的药品信息
+            // cMedicineItemDetail;// 中药信息
+            // projectDetail;//治疗信息
+            // patientInfoDetail;// 患者信息表
+            var detail={"medicalRecordDetail":medicalRecordDetail[0],
+                "wMedicineItemDetail":wMedicineItemDetail,
+                "cMedicineItemDetail":cMedicineItemDetail,
+                "projectDetail":projectDetail,
+                "patientInfoDetail":patientInfoDetail[0],
+                "medicalRecordCheck":medicalRecordCheck[0]};
+            // 获取病历id
+            // 获取患者Id(不需要)
+            // 获取接诊时间
+            //console.log(JSON.stringify(detail));
+            // ajax传递数据
+            $.ajax(
+                {
+                    url:'/saveAllMedicalRecordDetail',
+                    dataType:"json",
+                    contentType:"application/json;charset=UTF-8",
+                    data:JSON.stringify(detail),
+                    type:'post',
+                    success:function (data) {
+                        // 关闭窗口
+                        //var trans=JSON.parse(data); // 把jsong转换为数组
+                        var txt="";
+                        //console.log(trans);
+                        if(data['msg']==='success'){
+                            txt="保存成功！";
+                        }else{
+                            txt="保存失败！";
+                        }
+                        // 关闭弹出层
+                        var iframeIndex = parent.layer.getFrameIndex(window.name);
+                        parent.layer.close(iframeIndex);
+                        parent.layer.msg(txt);
+                    }
+                }
+            );
+        });
+
+
+    });
+</script>
+</body>
+</html>

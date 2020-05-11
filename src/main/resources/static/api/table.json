@@ -1,0 +1,18 @@
+{
+  "count": 1000,
+  "code": 0,
+  "msg": "",
+  "data": [
+    {
+      "id":1,
+      "medicinesId":"6903757060331",
+      "medicinesName":"乳酸菌素片",
+      "medicinesCategory":"西药",
+      "medicinesSpec":"0.4克",
+      "number":"100",
+      "productionDate":"2019-06-10",
+      "price":25,
+      "status":"在售"
+    }
+  ]
+}

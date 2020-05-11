@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hcc.mapper.MedicineBarcodeInfoMapper">
+
+    <insert id="addWebInfo">
+        insert into medicine_barcode_info values
+        (#{medicinesBarcode},#{medicinesName},
+        #{medicinesCode},#{oem},#{medicineImg})
+    </insert>
+
+    <!--查询药品基本信息，检索所有数据，或者根据条码检索-->
+    <select id="selectByBar" resultType="com.hcc.pojo.MedicineBarcodeInfo">
+        select * from medicine_barcode_info
+        <trim prefix="where" prefixOverrides="and" suffixOverrides="and">
+            <if test="medicinesBarcode!=null and medicinesBarcode !=''">
+                medicines_barcode like #{medicinesBarcode}"%" and
+            </if>
+        </trim>
+    </select>
+
+</mapper>

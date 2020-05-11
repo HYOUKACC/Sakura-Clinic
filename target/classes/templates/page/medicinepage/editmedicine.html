@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>修改药品信息</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../../lib/layui-v2.5.5/css/layui.css" media="all">
+    <link rel="stylesheet" href="../../css/public.css" media="all">
+    <style>
+        body {
+            background-color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+<div class="layuimini-container">
+    <div class="layuimini-main">
+        <div class="layui-form layui-form-pane" style="text-align: center">
+
+            <input type="hidden" name="mc" id="medicinesUnit2Id"  autocomplete="off" class="layui-input" placeholder="请直接输入数值">
+            <input type="hidden" name="de" id="saleUnit2Id"  autocomplete="off" class="layui-input" placeholder="请直接输入数值">
+            <input type="hidden" name="st" id="dosageForm2Id"  autocomplete="off" class="layui-input" placeholder="请直接输入数值">
+
+            <fieldset class="layui-elem-field layuimini-search">
+                <legend style="text-align:left">基本数据</legend>
+                <div style="margin: 10px 10px 10px 10px" >
+                    <div class="layui-form-item">
+                        <div class="layui-row">
+                            <div class="layui-inline" style="margin:5px 10px 5px 10px">
+                                <label class="layui-form-label">条形码</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" name="medicinesBarcode" autocomplete="off" class="layui-input" id="medicinesBarcodeId" lay-verify="medicinesBarV">
+                                </div>
+                            </div>
+                            <div class="layui-inline" style="margin: 5px 10px 5px 10px">
+                                <label class="layui-form-label">药品名</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" name="medicinesName" autocomplete="off" class="layui-input" id="medicinesNameId" lay-verify="required">
+                                </div>
+                            </div>
+                            <div class="layui-inline"style="margin: 5px 10px 5px 10px">
+                                <label class="layui-form-label">批号</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" name="batchNumber" autocomplete="off" class="layui-input" id="batchNumberId" lay-verify="required">
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div class="layui-row">
+                            <div class="layui-inline" style="margin: 5px 10px 5px 10px">
+                                <label class="layui-form-label">制剂规格</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" name="medicinesSpec" autocomplete="off" class="layui-input" id="medicinesSpecId" lay-verify="required">
+                                </div>
+                            </div>
+                            <div class="layui-inline" style="margin: 5px 10px 5px 10px">
+                                <label class="layui-form-label">包装规格</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" name="packingSpec" autocomplete="off" class="layui-input" id="packingSpecId" lay-verify="required">
+                                </div>
+                            </div>
+                            <div class="layui-inline" style="margin: 5px 10px 5px 10px">
+                                <label class="layui-form-label">包装单位</label>
+                                <div class="layui-input-inline">
+                                    <select name="medicinesUnit" lay-filter="medicinesUnitFilter" id="medicinesUnitId" lay-verify="required" lay-search="">
+                                        <option value=""></option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="layui-row">
+                            <div class="layui-inline" style="margin: 5px 10px 5px 10px">
+                                <label class="layui-form-label">剂型</label>
+                                <div class="layui-input-inline">
+                                    <select name="dosageForm" lay-filter="dosageFormFilter" id="dosageFormId" lay-verify="required" lay-search="">
+                                        <option value=""></option>
+
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="layui-inline"style="margin: 5px 10px 5px 10px">
+                                <label class="layui-form-label">生产日期</label>
+                                <div class="layui-input-inline" >
+                                    <input type="text" style="cursor: pointer;" name="productionDate" placeholder="YYYY-MM-DD" id="productionDateId" autocomplete="off" class="layui-input" lay-verify="required|productionDateV">
+                                </div>
+                            </div>
+                            <div class="layui-inline"style="margin: 5px 10px 5px 10px" >
+                                <label class="layui-form-label">过期日期</label>
+                                <div class="layui-input-inline" >
+                                    <input type="text" style="cursor: pointer;" name="expiryDate" placeholder="YYYY-MM-DD" id="expiryDateId" autocomplete="off" class="layui-input" lay-verify="required|expiryDateV">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </fieldset>
+
+            <fieldset class="layui-elem-field layuimini-search">
+                <legend style="text-align:left">销售数据</legend>
+                <div style="margin: 10px 10px 10px 10px">
+                    <div class="layui-form-item">
+                        <div class="layui-row">
+                            <div class="layui-inline" style="margin: 5px 10px 5px 10px">
+                                <label class="layui-form-label">药品简码</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" name="medicinesCode" autocomplete="off" class="layui-input" id="medicinesCodeId" lay-verify="required">
+                                </div>
+                            </div>
+                            <div class="layui-inline" style="margin: 5px 10px 5px 10px">
+                                <label class="layui-form-label">类型</label>
+                                <div class="layui-input-inline">
+                                    <select name="medicinesCategory" lay-filter="medicinesCategoryFilter" id="medicinesCategoryId" lay-verify="required">
+                                        <option value=""></option>
+                                        <option value="西药">西药</option>
+                                        <option value="中成药">中成药</option>
+                                        <option value="生物制品">生物制品</option>
+                                        <option value="医疗器械">医疗器械</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="layui-inline" style="margin: 10px 10px 10px 10px">
+                                <label class="layui-form-label">库存状态</label>
+                                <div class="layui-input-inline">
+                                    <select name="status" lay-filter="statusFilter"  id="statusId" lay-verify="required">
+                                        <option value=""></option>
+                                        <option value="在售">销售</option>
+                                        <option value="在库" selected>在库状态，上架请修改</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="layui-row">
+                            <div class="layui-inline"style="margin: 5px 10px 5px 10px">
+                                <label class="layui-form-label">入库库存</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" name="number" autocomplete="off" class="layui-input" id="numberId" lay-verify="required">
+                                </div>
+                            </div>
+                            <div class="layui-inline"style="margin: 5px 10px 5px 10px">
+                                <label class="layui-form-label">现库存</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" name="currentNumber" autocomplete="off" class="layui-input" id="currentNumberId" lay-verify="required">
+                                </div>
+                            </div>
+                            <div class="layui-inline" style="margin: 5px 10px 5px 10px">
+                                <label class="layui-form-label">销售单位</label>
+                                <div class="layui-input-inline">
+                                    <select name="saleUnit" lay-filter="saleUnitFilter" id="saleUnitId" lay-verify="required" lay-search="">
+                                        <option value=""></option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="layui-row">
+                            <div class="layui-inline"style="margin: 5px 10px 5px 10px">
+                                <label class="layui-form-label">成本价</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" placeholder="￥" name="primePrice" autocomplete="off" class="layui-input" id="primePriceId" lay-verify="required|primePriceV">
+                                </div>
+                            </div>
+                            <div class="layui-inline"style="margin:5px 10px 5px 10px">
+                                <label class="layui-form-label">销售价</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" placeholder="￥" name="price" autocomplete="off" class="layui-input" id="priceId" lay-verify="required|priceV">
+                                </div>
+                            </div>
+                            <div class="layui-inline" style="margin:5px 10px 5px 10px">
+                                <label class="layui-form-label">最后审核人</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" name="reviewer" autocomplete="off" class="layui-input" id="reviewerId" lay-verify="required">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </fieldset>
+
+            <fieldset class="layui-elem-field layuimini-search">
+                <legend style="text-align:left">追溯信息</legend>
+                <div style="margin: 10px 10px 10px 10px">
+                    <div class="layui-form-item">
+                        <div class="layui-row">
+                            <div class="layui-inline" style="margin: 5px 10px 5px 10px">
+                                <label class="layui-form-label">生产厂商</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" name="oem" autocomplete="off" class="layui-input" id="oemId" lay-verify="required">
+                                </div>
+                            </div>
+                            <div class="layui-inline" style="margin: 5px 10px 5px 10px">
+                                <label class="layui-form-label">供应商</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" name="supplier" autocomplete="off" class="layui-input" id="supplierId" lay-verify="required">
+                                </div>
+                            </div>
+                            <div class="layui-inline" style="margin: 5px 10px 5px 10px">
+                                <label class="layui-form-label">入库日期</label>
+                                <div class="layui-input-inline">
+                                    <!--入库日期不修改，直接读取原来的-->
+                                    <input type="text" name="storageDate" autocomplete="off" class="layui-input" id="storageDateId" lay-verify="required" disabled>
+                                </div>
+                            </div>
+
+                            <!--以当前日期为准-->
+                            <input  type="hidden" name="updateTime" autocomplete="off" class="layui-input" id="updateTimeId"  disabled>
+                            <input  type="hidden" name="medicinesId" autocomplete="off" class="layui-input" id="medicinesIdId"  disabled>
+
+                        </div>
+                    </div>
+                </div>
+            </fieldset>
+
+            <div class="layui-form-item">
+                <div class="layui-inline" >
+                    <button class="layui-btn" lay-submit="" lay-filter="saveBtn" style="background-color: #3CB371">确认修改</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="../../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
+<script>
+    layui.use(['form','laydate'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            $ = layui.$;
+        var laydate = layui.laydate;
+
+        // 验证各种信息
+        form.verify({
+            medicinesBarV : function(value){
+                if(value.length != 13){
+                    return '条形码必须13位';
+                }
+            },
+            primePriceV:[ // 以数字开头，+号前面的字符可以出现多次，？号前面字符可以出现0次或一次，$以此结尾
+                /^(0|([1-9]\d*))(\.\d+)?$/,'成本价格式不正确'
+            ],
+            priceV:[ // 以数字开头，+号前面的字符可以出现多次，？号前面字符可以出现0次或一次，$以此结尾
+                /^(0|([1-9]\d*))(\.\d+)?$/,'售价价格式不正确'
+            ]
+        });
+
+        //监听提交
+        form.on('submit(saveBtn)', function (data) {
+
+
+            // 向后台发送ajax请求
+            $.post("/upadteMedicineItem",data.field,function (data) {
+                // 关闭编辑药品窗口
+                var trans=JSON.parse(data); // 把jsong转换为数组
+                var txt="";
+                if(trans['msg']=='success'){
+                    txt="修改成功！";// 正常情况，一般都是修改成功，前端已经验证了一些必要的信息了
+                }else{
+                    txt="修改失败，请重新尝试！"; // 更新失败，存在同一个条形码在销售中
+                }
+                // 关闭弹出层
+                var iframeIndex = parent.layer.getFrameIndex(window.name);
+                parent.layer.close(iframeIndex);
+                parent.layer.msg(txt);
+            });
+            return false;
+        });
+
+        // 生产日期选择
+        laydate.render({
+            elem: '#productionDateId',
+            trigger: 'click', // 日期只读
+            theme: '#3CB371', // 主题色
+            showBottom: false
+        });
+
+        // 过期日期选择
+        laydate.render({
+            elem: '#expiryDateId',
+            trigger: 'click', // 日期只读
+            theme: '#3CB371', // 主题色
+            showBottom: false,
+            min:0 // 过期日期不能小于今天
+        });
+
+        // 封装函数，时间戳格式化函数
+        function timestampToTime(timestamp) {
+            //时间戳为10位需*1000，时间戳为13位的话不需乘1000
+            var date = new Date(timestamp);
+            Y = date.getFullYear() + '-';
+            M = (date.getMonth()+1 < 10 ? '0'+(date.getMonth()+1) : date.getMonth()+1) + '-';
+            D = date.getDate() + ' ';
+            h = date.getHours() + ':';
+            m = date.getMinutes() + ':';
+            s = date.getSeconds();
+            return Y+M+D+h+m+s;
+        }
+
+        $('#updateTimeId').val(function () {
+            var nowTime=new Date();
+            return timestampToTime(nowTime.getTime());
+        });
+
+
+
+        // ajax加载包装单位
+        $.ajax({
+            url: '/selectUnit',
+            dataType: 'json',
+            type: 'get',
+            success: function (data) {
+                var trans=data['data'];
+                $.each(trans, function (index, item) {
+                    // 下拉菜单里添加元素
+                    if(item.medicinesUnitText==$('#medicinesUnit2Id').val()){
+                        $("#medicinesUnitId").append('<option selected value="'+item.medicinesUnitText+'">'+item.medicinesUnitText+'</option>');
+
+                    }else if(item.medicinesUnitText==$('#saleUnit2Id').val()){
+                        $("#saleUnitId").append('<option selected value="'+item.medicinesUnitText+'">'+item.medicinesUnitText+'</option>');
+
+
+                    }else {
+                        $("#saleUnitId").append('<option  value="'+item.medicinesUnitText+'">'+item.medicinesUnitText+'</option>');
+                        $("#medicinesUnitId").append('<option  value="'+item.medicinesUnitText+'">'+item.medicinesUnitText+'</option>');
+                    }
+
+                });
+                form.render("select");
+            }
+        });
+
+        // ajax加载剂型
+        $.ajax({
+            url: '/selectDosageForm',
+            dataType: 'json',
+            type: 'get',
+            success: function (data) {
+                var trans=data['data'];
+                $.each(trans, function (index, item) {
+                    // 下拉菜单里添加元素
+                    if(item.dosageFormName==$('#dosageForm2Id').val()){
+                        $("#dosageFormId").append('<option selected value="'+item.dosageFormName+'">'+item.dosageFormName+'</option>');
+                    }else {
+                        $("#dosageFormId").append('<option value="'+item.dosageFormName+'">'+item.dosageFormName+'</option>');
+                    }
+
+                });
+                form.render("select");
+            }
+        });
+
+
+    });
+</script>
+</body>
+</html>

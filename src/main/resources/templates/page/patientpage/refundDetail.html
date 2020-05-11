@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>退费明细</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../lib/layui-v2.5.5/css/layui.css" media="all">
+    <link rel="stylesheet" href="../css/public.css" media="all">
+
+    <style>
+        #flow ::-webkit-scrollbar{/*滚动条整体样式*/
+            width:1px;     /*高宽分别对应横竖滚动条的尺寸*/
+            height: 0px;
+            scrollbar-arrow-color:red;
+
+        }
+
+        #flow ::-webkit-scrollbar-thumb{
+
+            background:#C1C1C1; /* 滚动条内部滑块颜色*/
+        }
+
+
+        .TextTitle{
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .TextSum{
+            font-size: 13px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<div class="layuimini-container">
+    <div class="layuimini-main" id="flow">
+
+        <div id="mainDiv" style="height: 550px;overflow: auto">
+            <div class="layui-row" id="flowDiv" >
+                <input type="hidden" name="medicalRecordId" id="medicalRecordIdId"   class="layui-input" >
+                <input type="hidden" name="patientId" id="patientIdId"   class="layui-input" >
+                <!--<div class="layui-col-md4">-->
+                    <fieldset class="layui-elem-field layuimini-search">
+                        <legend>西药明细</legend>
+                        <div style="margin: 10px 10px 10px 10px" id="wPrescribeTableDivId">
+                            <table class="layui-hide" id="wPreTableId" lay-filter="wPreTableFilter"></table>
+                        </div>
+                    </fieldset>
+                <br>
+                <!--</div>-->
+                <!--<div class="layui-col-md4">-->
+                    <fieldset class="layui-elem-field layuimini-search">
+                        <legend>中药明细</legend>
+                        <div style="margin: 10px 10px 10px 10px" id="cPrescribeTableDivId">
+                            <table class="layui-hide" id="cPreTableId" lay-filter="cPreTableFilter"></table>
+                        </div>
+                    </fieldset>
+                <br>
+                <!--</div>-->
+                <!--<div class="layui-col-md4">-->
+                    <fieldset class="layui-elem-field layuimini-search">
+                        <legend>治疗项明细</legend>
+                        <div style="margin: 10px 10px 10px 10px" id="projectTableDivId">
+                            <table class="layui-hide" id="projectTableId" lay-filter="projectTableFilter"></table>
+                        </div>
+                    </fieldset>
+                <!--</div>-->
+                <br>
+                <br>
+                <div class="layui-row">
+                    <div class="layui-col-md3">
+                        <span class="TextTitle">西药合计:</span>
+                        <span class="TextSum" id="wpsum"></span>
+                    </div>
+                    <div class="layui-col-md3">
+                        <span class="TextTitle">中药合计:</span>
+                        <span class="TextSum" id="cpsum"></span>
+                    </div>
+                    <div class="layui-col-md3">
+                        <span class="TextTitle">治疗单合计:</span>
+                        <span class="TextSum" id="prosum"></span>
+                    </div>
+                    <div class="layui-col-md3">
+                        <span class="TextTitle">合计退费:</span>
+                        <span class="TextSum" id="totalsum"></span>
+                    </div>
+                </div>
+                <hr class="layui-bg-black">
+                <hr class="layui-bg-black">
+                <div class="layui-row layui-col-space12">
+                    <div class="layui-btn-group layui-col-md6 layui-col-md-offset3">
+                        <button class="layui-btn data-add-btn layui-col-md12 layui-btn-lg" style="background-color: #3CB371;height: 60px">确认收费</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--单价模板（通用）-->
+        <script type="text/html" id="priceTem">
+            {{ d.price }}<i class="layui-icon layui-icon-rmb" style="position: absolute;right: 8px;font-weight: bold;font-size: 14px" ></i>
+        </script>
+        <!--总量模板（中西药通用）-->
+        <script type="text/html" id="numberTem">
+            {{ d.nowReturnNumber }}<i class="layui-icon " style="position: absolute;right: 8px;font-weight: bold;font-size: 14px" >{{d.saleUnit}}</i>
+        </script>
+        <!--总价模板（通用）-->
+        <script type="text/html" id="sumTem">
+            {{ d.nowReturnNumber*d.price }}<i class="layui-icon layui-icon-rmb" style="position: absolute;right: 8px;font-weight: bold;font-size: 14px" ></i>
+        </script>
+
+    </div>
+</div>
+<script src="../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
+<script>
+
+    layui.use(['form', 'table'], function () {
+        var $ = layui.jquery,
+            form = layui.form,
+            wPreTable = layui.table;
+            cPreTable = layui.table;
+            projectTable = layui.table;
+
+            var sumWP=0;
+            var sumCP=0;
+            var sumPro=0;
+            var total=0;
+
+
+
+        // 加载西药数据表格
+        wPreTable.render({
+            elem: '#wPreTableId', // 绑定的元素
+            id:'wPreTableId',
+            limit:'100',
+            //height:'full-200',
+            url: '/showWaitRefundWBatch', // 表格的数据接口，展示表格都会经过这个接口
+            cols:
+                [
+                    [
+                        {field:'medicalRecordId',hide:true},
+                        {field:'wPrescribeId',hide:true},
+                        {field:'wPreBatchId',hide:true},
+                        {field: 'medicinesName',minWith:150,  title: '药品名',unresize:true},
+                        {field: 'batchNumber',minWith:150,  title: '退药批次',unresize:true},
+                        {field: 'price', minWith:80, title: '单价',templet:'#priceTem',unresize:true},
+                        {field: 'nowReturnNumber',minWith:80,  title: '退药数量',unresize:true,templet:'#numberTem'},
+                        {field: 'sumPrice',minWith:80,unresize:true,title: '退费金额',templet:'#sumTem'}
+
+                    ]
+                ],
+            data:[
+
+            ],
+            where:{
+                medicalRecordId:$('#medicalRecordIdId').val()
+            },
+            done:function () {
+                var tableBak = layui.table.cache['wPreTableId'];// 存储数据表格数据
+                //console.log(tableBak);
+                for (var i = 0; i < tableBak.length; i++) { // 遍历数据表格数据
+                    sumWP=sumWP+(tableBak[i]['price']*tableBak[i]['nowReturnNumber']);
+                }
+                total=total+sumWP;
+                $('#wpsum').text(sumWP+"￥");
+                $('#totalsum').text(total+"￥");
+
+            }
+
+        });
+
+        // 加载中药数据表格
+        cPreTable.render({
+            elem: '#cPreTableId', // 绑定的元素
+            id:'cPreTableId',
+            limit:'100',
+            //height:'full-200',
+            url: '/showWaitRefundCBatch', // 表格的数据接口，展示表格都会经过这个接口
+            cols:
+                [
+                    [
+                        {field:'medicalRecordId',hide:true},
+                        {field:'cPrescribeId',hide:true},
+                        {field:'cPreBatchId',hide:true},
+                        {field: 'medicinesName', minWith:150, title: '药品名',unresize:true},
+                        {field: 'batchNumber',minWith:150,  title: '退药批次',unresize:true},
+                        {field: 'sourceArea',minWith:150,  title: '产地',unresize:true},
+                        {field: 'price', minWith:80,title: '单价',unresize:true,templet:'#priceTem'},
+                        {field: 'nowReturnNumber',minWith:80,  title: '退药数量',unresize:true,templet:'#numberTem'},
+                        {field: 'sumPrice',minWith:80,unresize:true,title: '退费金额',templet:'#sumTem'},
+                    ]
+                ],
+            data:[
+
+            ],
+            where:{
+                medicalRecordId:$('#medicalRecordIdId').val()
+            },
+            done:function () {
+                var tableBak = layui.table.cache['cPreTableId'];// 存储数据表格数据
+                //console.log(tableBak);
+                for (var i = 0; i < tableBak.length; i++) { // 遍历数据表格数据
+                    sumCP=sumCP+(tableBak[i]['price']*tableBak[i]['nowReturnNumber']);
+                }
+                total=total+sumCP;
+                $('#cpsum').text(sumCP+"￥");
+                $('#totalsum').text(total+"￥");
+            }
+        });
+
+        // 加载治疗单数据表格
+        projectTable.render({
+            elem: '#projectTableId', // 绑定的元素
+            id:'projectTableId',
+            limit:'100',
+            //height:'full-200',
+            url: '/showWaitRefundProBatch', // 表格的数据接口，展示表格都会经过这个接口
+            cols:
+                [
+                    [
+                        {field:'medicalRecordId',hide:true},
+                        {field:'projectId',hide:true},
+                        {field:'proBatchId',hide:true},
+                        {field: 'projectName',minWith:150, title: '治疗项',unresize:true},
+                        {field: 'price',minWith:80, title: '单价',unresize:true,templet:'#priceTem'},
+                        {field: 'nowReturnNumber',minWith:80, title: '取消次数',unresize:true},
+                        {field: 'sumPrice',unresize:true,minWith:80,title: '退费金额',templet:'#sumTem'}
+                    ]
+                ],
+            data:[
+
+            ],
+            where:{
+                medicalRecordId:$('#medicalRecordIdId').val()
+            },
+            done:function () {
+                var tableBak = layui.table.cache['projectTableId'];// 存储数据表格数据
+                //console.log(tableBak);
+                for (var i = 0; i < tableBak.length; i++) { // 遍历数据表格数据
+                    sumPro=sumPro+(tableBak[i]['price']*tableBak[i]['nowReturnNumber']);
+                }
+                total=total+sumPro;
+                $('#prosum').text(sumPro+"￥");
+                $('#totalsum').text(total+"￥");
+            }
+
+
+        });
+
+
+
+        // 封装函数，时间戳格式化函数(出生日期)
+        function timestampToTime(timestamp) {
+            //时间戳为10位需*1000，时间戳为13位的话不需乘1000
+            var date = new Date(timestamp);
+            Y = date.getFullYear() + '-';
+            M = (date.getMonth()+1 < 10 ? '0'+(date.getMonth()+1) : date.getMonth()+1) + '-';
+            D = date.getDate() + ' ';
+            h = date.getHours() + ':';
+            m = date.getMinutes() + ':';
+            s = date.getSeconds();
+            return Y+M+D;
+        }
+
+        // 格式化时间戳就诊日期
+        function timestampToTimeConsltation(timestamp) {
+            //时间戳为10位需*1000，时间戳为13位的话不需乘1000
+            var date = new Date(timestamp);
+            Y = date.getFullYear() + '-';
+            M = (date.getMonth()+1 < 10 ? '0'+(date.getMonth()+1) : date.getMonth()+1) + '-';
+            D = date.getDate() + ' ';
+            h = date.getHours() + ':';
+            m = date.getMinutes() + ':';
+            s = date.getSeconds();
+            return Y+M+D+h+m+s;
+        }
+
+        // 监听收费按钮
+        $(".data-add-btn").on("click", function () {
+            // 获取西药值
+            var wpreBatch=[]; // 备份数据表格中数据
+            var wpreBatchTab = layui.table.cache['wPreTableId'];// 存储数据表格数据
+            for (var i = 0; i < wpreBatchTab.length; i++) { // 遍历数据表格数据 // 每行数据都是唯一的
+                if(wpreBatchTab[i]!=""){
+                    wpreBatch.push(wpreBatchTab[i]['wPreBatchId']);
+                }
+            }
+            console.log(wpreBatch);
+            //
+            // 获取中药值
+            var cpreBatch=[]; // 备份数据表格中数据
+            var cpreBatchTab = layui.table.cache['cPreTableId'];// 存储数据表格数据
+            for (var i = 0; i < cpreBatchTab.length; i++) { // 遍历数据表格数据
+                if(cpreBatchTab[i]!=""){
+                    cpreBatch.push(cpreBatchTab[i]['cPreBatchId']);
+                }
+            }
+            console.log(cpreBatch);
+            //
+            // // 获取治疗处方值
+            var proBatch=[]; // 备份数据表格中数据
+            var proBatchTable = layui.table.cache['projectTableId'];// 存储数据表格数据
+            for (var i = 0; i < proBatchTable.length; i++) { // 遍历数据表格数据
+                if(proBatchTable[i]!=""){
+                    proBatch.push(proBatchTable[i]['proBatchId']);
+                }
+            }
+            console.log(proBatch);
+            var medicalRecordId=$('#medicalRecordIdId').val();
+            console.log(medicalRecordId);
+            $.ajax({
+                url:'/refundDetailClick',
+                dataType:"json",
+                data:{
+                    "medicalRecordId":medicalRecordId,
+                    "wpreBatch":wpreBatch,
+                    "cpreBatch":cpreBatch,
+                    "proBatch":proBatch},
+                type:'post',
+                success:function (data) {
+                    // 关闭窗口
+                    //var trans=JSON.parse(data); // 把jsong转换为数组
+
+                    // //console.log(trans);
+                    if(data['msg']=='success'){
+                        // 关闭弹出层
+                        var iframeIndex = parent.layer.getFrameIndex(window.name);
+                        parent.layer.close(iframeIndex);
+                        parent.layer.msg("退费成功！",{icon: 6,time:1000});
+                    }else{
+                        var iframeIndex = parent.layer.getFrameIndex(window.name);
+                        parent.layer.close(iframeIndex);
+                        parent.layer.msg("退费失败！",{icon: 5,time:1000});
+                    }
+
+                }
+            });
+
+        });
+
+    });
+
+</script>
+
+
+
+</body>
+</html>

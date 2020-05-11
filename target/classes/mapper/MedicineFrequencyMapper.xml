@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hcc.mapper.MedicineFrequencyMapper">
+
+    <select id="searchFrequency" resultType="com.hcc.pojo.MedicineFrequency">
+          select * from medicine_frequency
+        <trim prefix="where" prefixOverrides="and" suffixOverrides="and">
+            <if test="medicineFrequencyCode!=null and medicineFrequencyCode !=''">
+                medicine_frequency_code like #{medicineFrequencyCode}"%" and
+            </if>
+            <if test="medicineFrequencyText!=null and medicineFrequencyText !=''">
+                medicineFrequency_text like #{medicineFrequencyText}"%" and
+            </if>
+            <if test="frequencyStatus!=null and frequencyStatus !=''">
+                frequency_status ="1" and
+            </if>
+
+        </trim>
+    </select>
+</mapper>

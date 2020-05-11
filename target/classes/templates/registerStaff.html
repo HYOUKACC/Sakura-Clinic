@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>员工注册</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../lib/layui-v2.5.5/css/layui.css" media="all">
+    <link rel="stylesheet" href="../css/public.css" media="all">
+
+    <script src="../lib/dist/axios.js" charset="utf-8"></script>
+    <script src="../lib/dist/xm-select.js" charset="utf-8"></script>
+    <style>
+        .layui-form-pane xm-select {
+            margin: 0px 0px 0px 0;
+            width: auto;
+            z-index: 5;
+        }
+        xm-select > .xm-body .xm-option {
+            word-wrap:break-word
+        }
+    </style>
+</head>
+<body>
+<div class="layuimini-container" style="margin-top: 10px">
+    <div class="layuimini-main" >
+        <form class="layui-form layui-form-pane" style="margin-top: 20px">
+            <div class="layui-form-item" style="text-align: center">
+                <div class="layui-row" style="text-align: center">
+
+                    <div class="layui-row">
+                        <!--左边-->
+                        <div class="layui-col-md4 layui-col-md-offset2">
+                            <div class="layui-row">
+                                <div style="margin: 15px 10px 5px 10px;text-align: left" >
+                                    <div class="layui-inline-block" style="text-align: left">
+                                        <label class="layui-form-label">姓名</label>
+                                        <div class="layui-input-block">
+                                            <input type="tel" name="name" id="nameId"  autocomplete="off" class="layui-input" placeholder="">
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <div class="layui-row">
+                                <div class="layui-inline-block" style="margin: 15px 10px 5px 10px">
+                                    <label class="layui-form-label">性别</label>
+                                    <div class="layui-input-block">
+                                        <select name="sex" lay-filter="sexIdFilter" id="sexId" lay-verify="required">
+                                            <option value=""></option>
+                                            <option value="男">男</option>
+                                            <option value="女">女</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <div class="layui-row">
+                                <div style="margin: 15px 10px 5px 10px">
+                                    <div class="layui-form-item" >
+                                        <div class="layui-inline-block" >
+                                            <label class="layui-form-label">入职日期</label>
+                                            <div class="layui-input-block" >
+                                                <input type="text" style="cursor: pointer;" name="entryDate" placeholder="YYYY-MM-DD" id="entryDateId" autocomplete="off" class="layui-input"  lay-verify="required">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!--右边-->
+                        <div class="layui-col-md4 ">
+                            <div class="layui-row">
+                                <div style="margin: 15px 10px 5px 10px;text-align: left" >
+                                    <div class="layui-inline-block" style="text-align: left">
+                                        <label class="layui-form-label">姓名简码</label>
+                                        <div class="layui-input-block">
+                                            <input type="tel" name="nameCode" id="nameCodeId"  autocomplete="off" class="layui-input" placeholder="请输入拼音大写缩写"  lay-verify="required">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="layui-row">
+                                <div style="margin:15px 10px 5px 10px;text-align: left" >
+                                    <div class="layui-inline-block" >
+                                        <label class="layui-form-label">部门</label>
+                                        <div class="layui-input-block">
+                                            <select name="departmentId" lay-filter="depatrmentFilter" id="departmentIdId"  lay-search=""  lay-verify="required">
+                                                <option value=""></option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="layui-row">
+                                <div style="margin: 15px 10px 5px 10px;text-align: left" >
+                                    <div class="layui-inline-block" style="text-align: left">
+                                        <label class="layui-form-label">员工ID</label>
+                                        <div class="layui-input-block">
+                                            <input disabled type="text" name="staffId" id="staffIdId"  autocomplete="off" class="layui-input" >
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="layui-row">
+                                <div style="margin: 15px 10px 5px 10px;text-align: left" >
+                                    <div class="layui-inline-block" style="text-align: left">
+                                        <label class="layui-form-label">登录密码</label>
+                                        <div class="layui-input-block">
+                                            <input  type="password" name="password" id="passwordId"  autocomplete="off" class="layui-input" >
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!--<div class="layui-row">-->
+                                <!--<div style="margin: 15px 10px 5px 10px">-->
+                                    <!--<div class="layui-form-item" >-->
+                                        <!--<div class="layui-inline-block">-->
+                                            <!--<label class="layui-form-label">离职日期</label>-->
+                                            <!--<div class="layui-input-block" >-->
+                                                <!--<input type="text" style="cursor: pointer;" name="leaveDate" placeholder="YYYY-MM-DD" id="leaveDateId" autocomplete="off" class="layui-input" >-->
+                                            <!--</div>-->
+                                        <!--</div>-->
+                                    <!--</div>-->
+                                <!--</div>-->
+                            <!--</div>-->
+                        </div>
+                    </div>
+                    <br>
+                    <br>
+                    <div class="layui-row">
+                        <div class="layui-inline" id="submitDiv">
+                            <button id="submitBtnId" class="layui-btn" lay-submit="" lay-filter="saveBtn" style="background-color: #3CB371">确认申请</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<script src="../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
+<script src="../js/lay-config.js?v=1.0.4" charset="utf-8"></script>
+<script>
+    layui.use(['form', 'table','flow','layer', 'element','laydate'], function () {
+        var $ = layui.jquery,
+            form = layui.form,
+            patientCenter = layui.table;
+        var element = layui.element;
+        var layer = layui.layer;
+        var laydate = layui.laydate;
+
+
+        // 封装函数，时间戳格式化函数
+        function timestampToTime() {
+            //时间戳为10位需*1000，时间戳为13位的话不需乘1000
+            var date = new Date();
+            Y = date.getFullYear() + '';
+            M = (date.getMonth()+1 < 10 ? '0'+(date.getMonth()+1) : date.getMonth()+1) + '';
+            D = date.getDate() + '';
+            h = (date.getHours() < 10 ? '0'+(date.getHours()) : date.getHours()) + '';
+            m = (date.getMinutes() < 10 ? '0'+(date.getMinutes()) : date.getMinutes()) ;
+
+            return Y+M+D+h+m;
+        }
+
+        $('#staffIdId').val(timestampToTime);
+
+        form.on('submit(saveBtn)', function (data) {
+
+            console.log(data.field);
+            // // 向后台发送ajax请求
+             $.post("/registerStaffInfo",data.field,function (result) {
+
+                var trans=JSON.parse(result); // 把jsong转换为数组
+                var txt=trans['msg'];
+                if(txt=='success'){
+                    // 关闭弹出层
+                    var iframeIndex = parent.layer.getFrameIndex(window.name);
+                    parent.layer.close(iframeIndex);
+                    parent.layer.msg('申请成功，等待审核',{icon: 1});
+                }else {
+                    layer.msg(txt,{icon:5});
+                }
+
+            });
+
+           return false;
+        });
+
+        // // 加载部门
+        $.ajax({
+            url: '/selectAllDp',
+            dataType: 'json',
+            type: 'get',
+            success: function (data) {
+                var trans=data['data'];
+                $.each(trans, function (index, item) {
+                    // 下拉菜单里添加元素
+
+                    $("#departmentIdId").append('<option value="'+item.departmentId+'">'+item.departmentName+'</option>');
+
+                });
+                form.render("select");
+            }
+        });
+
+        // 入职日期选择
+        laydate.render({
+            elem: '#entryDateId',
+            trigger: 'click', // 日期只读
+            theme: '#3CB371', // 主题色
+            showBottom: false
+        });
+
+
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>登录页面</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../lib/layui-v2.5.5/css/layui.css" media="all">
+    <link rel="stylesheet" href="../css/public.css" media="all">
+
+</head>
+<body>
+<div class="layuimini-container" >
+    <div class="layuimini-main" >
+        <div style="height: 300px;height: 200px">
+            <fieldset class="layui-elem-field layuimini-search" >
+                <legend style="text-align:left">用户登录</legend>
+                <div class="layui-form layui-form-pane" style="text-align: center;">
+                    <div style="margin: 10px 10px 10px 10px">
+                        <div class="layui-row">
+                            <div class="layui-form-item" >
+                                <div class="layui-inline" style="margin: 10px 10px 10px 10px">
+                                    <label class="layui-form-label">用户名</label>
+                                    <div class="layui-input-inline">
+                                        <input type="text" name="name" autocomplete="off" class="layui-input" id="usernameId" lay-verify="">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-row">
+                            <div class="layui-form-item" >
+                                <div class="layui-inline" style="margin: 10px 10px 10px 10px">
+                                    <label class="layui-form-label">密码</label>
+                                    <div class="layui-input-inline">
+                                        <input type="password" name="password" lay-verify="pass" placeholder="请输入密码" autocomplete="off" class="layui-input">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="layui-form-item">
+                            <div class="layui-inline" >
+                                <button class="layui-btn" lay-submit="" lay-filter="saveBtn" style="background-color: #3CB371">登录</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </fieldset>
+        </div>
+    </div>
+</div>
+</body>
+<script src="../../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
+<script src="../../js/lay-config.js" charset="utf-8"></script>
+<script>
+    layui.use(['form','laydate'], function () {
+        var form = layui.form;
+          var  layer = layui.layer;
+            $ = layui.$;
+        var laydate = layui.laydate;
+
+        // 验证各种信息
+        form.verify({
+
+            primePriceV:[ // 以数字开头，+号前面的字符可以出现多次，？号前面字符可以出现0次或一次，$以此结尾
+                /^(0|([1-9]\d*))(\.\d+)?$/,'成本价格式不正确'
+            ],
+            priceV:[ // 以数字开头，+号前面的字符可以出现多次，？号前面字符可以出现0次或一次，$以此结尾
+                /^(0|([1-9]\d*))(\.\d+)?$/,'售价价格式不正确'
+            ]
+        });
+
+        //监听提交
+        form.on('submit(saveBtn)', function (data) {
+
+            $.post("/loginForm",data.field,function (result) {
+                var trans=JSON.parse(result);
+
+                if(trans['msg']=='success'){
+                    // 认证成功，跳转到首页
+
+                    window.location.href="/index";
+                }else {
+                    layer.msg(trans['msg'], {icon: 5,time: 1000});
+                }
+
+            });
+            return false;
+        });
+
+
+
+    });
+</script>
+</html>

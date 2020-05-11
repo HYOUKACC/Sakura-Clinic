@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hcc.mapper.WPrescribeMapper">
+
+    <resultMap id="WPrescribeMap" type="WPrescribe">
+        <id property="id" column="id" />
+        <result property="medicinesName" column="medicines_name"/>
+        <result property="medicinesBarcode" column="medicines_barcode"/>
+        <result property="medicinesSpec" column="medicines_spec"/>
+        <result property="medicinesUnit" column="medicines_unit"/>
+        <result property="dosageForm" column="dosage_form"/>
+        <result property="packingSpec" column="packing_spec"/>
+        <result property="saleUnit" column="sale_unit"/>
+        <result property="batchNumber" column="batch_number"/>
+        <result property="productionDate" column="production_date"/>
+        <result property="expiryDate" column="expiry_date"/>
+        <result property="wDirection" column="w_direction"/>
+        <result property="singleDose" column="single_dose"/>
+        <result property="frequency" column="frequency"/>
+        <result property="duration" column="duration"/>
+        <result property="frequencyUnit" column="frequency_unit"/>
+        <result property="number" column="number"/>
+        <result property="price" column="price"/>
+        <result property="wPrescribeInfo" column="w_prescribe_info"/>
+        <result property="isSend" column="is_send"/>
+        <result property="isReturn" column="is_return"/>
+        <result property="wPrescribeStatus" column="w_prescribe_status"/>
+        <association property="medicalRecord" javaType="MedicalRecord">
+            <id property="medicalRecordId" column="medical_record_id" />
+            <result property="registerDate" column="register_date"/>
+            <result property="consultationDate" column="consultation_date"/>
+            <result property="isSend" column="is_send"/>
+            <result property="isReturn" column="is_return"/>
+            <result property="isNeed" column="is_need"/>
+            <result property="registerStatus" column="register_status"/>
+        </association>
+        <association property="medicineItem" javaType="MedicineItem">
+            <id property="medicinesId" column="medicines_id" />
+        </association>
+    </resultMap>
+
+    <!--多字段更新-->
+    <!--<trim prefix="status =case" suffix="end,">-->
+        <!--<foreach collection="list" item="item" index="index">-->
+            <!--when id=#{item.id} then #{item.status}-->
+        <!--</foreach>-->
+        <!--else default_value-->
+    <!--</trim>-->
+
+    <!--批量插入西药处方单-->
+    <insert id="insertAllWP" parameterType="java.util.List">
+        insert into w_prescribe(medical_record_id,medicines_name,medicines_barcode,
+        medicines_spec,medicines_unit,dosage_form,packing_spec,sale_unit,
+        w_direction,single_dose,frequency,duration,frequency_unit,
+        number,price,w_prescribe_info,is_send,is_return,w_prescribe_status)
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.medicalRecord.medicalRecordId},#{item.medicinesName},
+            #{item.medicinesBarcode},
+            #{item.medicinesSpec},#{item.medicinesUnit},
+            #{item.dosageForm},#{item.packingSpec},
+            #{item.saleUnit},#{item.wDirection},
+            #{item.singleDose},#{item.frequency},
+            #{item.duration},#{item.frequencyUnit},
+            #{item.number},#{item.price},#{item.wPrescribeInfo},
+            #{item.isSend},#{item.isReturn},#{item.wPrescribeStatus})
+        </foreach>
+    </insert>
+
+    <!--发药窗口批量更新is_send字段-->
+    <update id="updateSendMedical" parameterType="java.util.List">
+        update w_prescribe
+        set is_send=
+        <foreach collection="list" item="item" index="index"
+                 separator=" " open="case" close="end">
+            when id=#{item.id} then #{item.isSend}
+        </foreach>
+        where id in
+        <foreach collection="list" index="index" item="item"
+                 separator="," open="(" close=")">
+            #{item.id}
+        </foreach>
+    </update>
+
+    <!--批量更新退药标志-->
+    <update id="updateReturnMedical" parameterType="java.util.List">
+        update w_prescribe
+        set is_return=
+        <foreach collection="list" item="item" index="index"
+                 separator=" " open="case" close="end">
+            when id=#{item.id} then #{item.isReturn}
+        </foreach>
+        where id in
+        <foreach collection="list" index="index" item="item"
+                 separator="," open="(" close=")">
+            #{item.id}
+        </foreach>
+    </update>
+
+    <!--根据病历ID获取西药处方单-->
+    <!--select id,medical_record_id,medicines_name,sale_unit,number,price,dosage_form-->
+    <select id="selectWPByMrId" resultType="com.hcc.pojo.WPrescribe">
+        select *
+        from  w_prescribe
+        where medical_record_id=#{medicalRecordId} and w_prescribe_status='1'
+    </select>
+
+    <!--&lt;!&ndash;根据Id获取西药待发药列表&ndash;&gt;-->
+    <!--<select id="selectWaitSendWPByMrId" resultType="com.hcc.pojo.WPrescribe">-->
+        <!--select id,medical_record_id,medicines_name,sale_unit,number,price,dosage_form-->
+        <!--from  w_prescribe-->
+        <!--where medical_record_id=#{medicalRecordId} and w_prescribe_status='1' -->
+    <!--</select>-->
+</mapper>

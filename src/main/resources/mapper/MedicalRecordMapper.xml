@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hcc.mapper.MedicalRecordMapper">
+
+    <resultMap id="medicalRecordMap" type="MedicalRecord">
+        <id property="medicalRecordId" column="medical_record_id" />
+        <result property="diagnosisTimes" column="diagnosis_times"/>
+        <result property="registerDate" column="register_date"/>
+        <result property="consultationDate" column="consultation_date"/>
+        <result property="registerCategory" column="register_category"/>
+        <result property="registerPrice" column="register_price"/>
+        <result property="patientHeight" column="patient_height"/>
+        <result property="patientWeight" column="patient_weight"/>
+        <result property="patientTemperature" column="patient_temperature"/>
+        <result property="patientBp" column="patient_bp"/>
+        <result property="patientDescribe" column="patient_describe"/>
+        <result property="clinicalDiagnosis" column="clinical_diagnosis"/>
+        <result property="registerStatus" column="register_status"/>
+        <result property="isSend" column="is_send"/>
+        <result property="isReturn" column="is_return"/>
+        <result property="isNeed" column="is_need"/>
+        <association property="patientInfo" javaType="PatientInfo">
+            <id property="patientId" column="patient_id"/>
+            <result property="patientName" column="patient_name"/>
+            <result property="sex" column="sex"/>
+            <result property="birthday" column="birthday"/>
+            <result property="phone" column="phone"/>
+            <result property="allergies" column="allergies"/>
+            <result property="chronic" column="chronic"/>
+            <result property="familyMedicalHistory" column="family_medical_history"/>
+        </association>
+        <association property="staffInfo" javaType="StaffInfo">
+            <id property="staffId" column="staff_id"/>
+            <result property="name" column="name"/>
+            <result property="nameCode" column="name_code"/>
+            <association property="staffDepartment" javaType="StaffDepartments">
+                <id property="departmentId" column="department_id"/>
+                <result property="departmentName" column="department_name"/>
+            </association>
+        </association>
+    </resultMap>
+
+
+    <!--保存患者挂号信息-->
+    <insert id="saveReg">
+        insert into medical_record (medical_record_id,patient_id,staff_id,diagnosis_times,
+        register_date,register_category,register_price,register_status)
+        values (#{medicalRecordId},#{patientInfo.patientId},#{staffInfo.staffId},
+        #{diagnosisTimes},#{registerDate},#{registerCategory},#{registerPrice},#{registerStatus})
+    </insert>
+
+    <!--更新患者预诊界面内容-->
+    <update id="updatePreMedicalRe">
+        update medical_record set
+        patient_height=#{patientHeight},patient_weight=#{patientWeight},patient_temperature=#{patientTemperature},
+        patient_bp=#{patientBp},patient_describe=#{patientDescribe},register_status=#{registerStatus}
+        where medical_record_id=#{medicalRecordId}
+    </update>
+
+    <!--更新医生接诊界面患者病历信息-->
+    <update id="updateAftMedicalRe">
+        update medical_record set
+        patient_height=#{patientHeight},patient_weight=#{patientWeight},
+        patient_temperature=#{patientTemperature},
+        patient_bp=#{patientBp},patient_describe=#{patientDescribe},
+        consultation_date=#{consultationDate},
+        clinical_diagnosis=#{clinicalDiagnosis},
+        is_need=#{isNeed},
+        is_send=#{isSend},
+        is_return=#{isReturn},
+        register_status=#{registerStatus}
+        where medical_record_id=#{medicalRecordId}
+    </update>
+
+    <!--确认缴费按钮-->
+    <update id="chargeMedicalRecore">
+        update medical_record
+        set is_send=#{isSend},register_status=#{registerStatus}
+        where medical_record_id=#{medicalRecordId}
+    </update>
+
+    <!--发药窗口修改状态-->
+    <update id="updateSendMedicine">
+        update medical_record
+        set register_status=#{registerStatus}
+        where medical_record_id=#{medicalRecordId}
+    </update>
+
+    <!--修改退药窗口信息-->
+    <update id="updateReturnMedical">
+        update medical_record
+        set is_return=#{isReturn}
+        where medical_record_id=#{medicalRecordId}
+    </update>
+
+    <!--确认退费按钮，根据id，修改退费标志-->
+    <update id="updateRefundMedicalRecord">
+        update medical_record
+        set is_return=0
+        where medical_record_id=#{medicalRecordId}
+    </update>
+
+    <!--展示候诊列表,默认列表-->
+    <select id="showWaitListDefault" resultMap="medicalRecordMap">
+        select * from medical_record
+        left join patient_info on medical_record.patient_id=patient_info.patient_id
+        left join staff_info on medical_record.staff_id=staff_info.staff_id
+        left join staff_departments on staff_info.department_id=staff_departments.department_id
+        where consultation_date is null and (register_status ='已挂号' or register_status ='已预诊')
+    </select>
+
+    <!--根据患者信息-->
+    <!--根据医生，科室-->
+    <select id="showWaitList" resultMap="medicalRecordMap">
+        select patient_id,patient_name,patient_info.sex,
+        department_name,staff_info.`name`,patient_info.birthday,medical_record_id,register_status
+        from medical_record
+        left join patient_info USING(patient_id)
+        left join staff_info USING(staff_id)
+        left join staff_departments USING(department_id)
+        where consultation_date is null and (register_status ='已挂号' or register_status ='已预诊')
+        <trim prefix="and" prefixOverrides="and" suffixOverrides="and">
+            <if test="patientInfo.patientId!=null and patientInfo.patientId !=''">
+                patient_info.patient_id =#{patientInfo.patientId} and
+            </if>
+            <if test="patientInfo.patientName !=null and patientInfo.patientName !=''">
+                patient_info.patient_name like #{patientInfo.patientName}"%" and
+            </if>
+            <if test="patientInfo.phone!=null and patientInfo.phone !=''">
+                patient_info.phone like #{patientInfo.phone}"%" and
+            </if>
+            <if test="staffInfo.staffDepartment.departmentId !=null and staffInfo.staffDepartment.departmentId !=''">
+                staff_departments.department_id like #{staffInfo.staffDepartment.departmentId} and
+            </if>
+            <if test="staffInfo.staffId !=null and staffInfo.staffId !=''">
+                staff_info.staff_id like #{staffInfo.staffId} and
+            </if>
+        </trim>
+    </select>
+
+    <!--获取病历表，患者预诊界面-->
+    <select id="showMedicalForPre" resultMap="medicalRecordMap">
+        select medical_record_id,patient_id,patient_height,
+        patient_weight,patient_temperature,patient_bp,patient_describe,
+        clinical_diagnosis,consultation_date,register_date,diagnosis_times,staff_id
+        from medical_record where medical_record_id=#{medicalRecordId}
+    </select>
+
+    <!--获取待收费列表-->
+    <select id="showWaitCharge" resultMap="medicalRecordMap">
+        select medical_record_id,patient_id,sex,phone,patient_name,consultation_date,
+        is_send,is_return,is_need,birthday
+        from medical_record
+        left join patient_info USING(patient_id)
+        where is_need=1 and is_send=0
+        <trim prefix="and" prefixOverrides="and" suffixOverrides="and">
+            <if test="patientInfo.patientId!=null and patientInfo.patientId !=''">
+                patient_info.patient_id =#{patientInfo.patientId} and
+            </if>
+            <if test="patientInfo.patientName !=null and patientInfo.patientName !=''">
+                patient_info.patient_name like #{patientInfo.patientName}"%" and
+            </if>
+            <if test="patientInfo.phone!=null and patientInfo.phone !=''">
+                patient_info.phone like #{patientInfo.phone}"%" and
+            </if>
+        </trim>
+    </select>
+
+    <!--获取待发药列表-->
+    <select id="showWaitSendMedical" resultMap="medicalRecordMap">
+        select medical_record_id,patient_id,sex,phone,patient_name,consultation_date,
+        is_send,is_return,is_need,birthday
+        from medical_record
+        left join patient_info USING(patient_id)
+        where is_send=1 and register_status="待取药"
+        <trim prefix="and" prefixOverrides="and" suffixOverrides="and">
+            <if test="patientInfo.patientId!=null and patientInfo.patientId !=''">
+                patient_info.patient_id =#{patientInfo.patientId} and
+            </if>
+            <if test="patientInfo.patientName !=null and patientInfo.patientName !=''">
+                patient_info.patient_name like #{patientInfo.patientName}"%" and
+            </if>
+            <if test="patientInfo.phone!=null and patientInfo.phone !=''">
+                patient_info.phone like #{patientInfo.phone}"%" and
+            </if>
+        </trim>
+    </select>
+
+
+    <!--获取待退药列表-->
+    <select id="showReturnMedical" resultMap="medicalRecordMap">
+        select medical_record_id,patient_id,sex,phone,patient_name,consultation_date,
+        is_send,is_return,is_need,birthday
+        from medical_record
+        left join patient_info USING(patient_id)
+        where is_send=1 and register_status="已取药" and is_return=0
+        <trim prefix="and" prefixOverrides="and" suffixOverrides="and">
+            <if test="patientInfo.patientId!=null and patientInfo.patientId !=''">
+                patient_info.patient_id =#{patientInfo.patientId} and
+            </if>
+            <if test="patientInfo.patientName !=null and patientInfo.patientName !=''">
+                patient_info.patient_name like #{patientInfo.patientName}"%" and
+            </if>
+            <if test="patientInfo.phone!=null and patientInfo.phone !=''">
+                patient_info.phone like #{patientInfo.phone}"%" and
+            </if>
+        </trim>
+    </select>
+
+    <!--获取待退费列表-->
+    <select id="showWaitRefund" resultMap="medicalRecordMap">
+        select medical_record_id,patient_id,sex,phone,patient_name,consultation_date,
+        is_send,is_return,is_need,birthday
+        from medical_record
+        left join patient_info USING(patient_id)
+        where is_send=1 and register_status="已取药" and is_return=1
+        <trim prefix="and" prefixOverrides="and" suffixOverrides="and">
+            <if test="patientInfo.patientId!=null and patientInfo.patientId !=''">
+                patient_info.patient_id =#{patientInfo.patientId} and
+            </if>
+            <if test="patientInfo.patientName !=null and patientInfo.patientName !=''">
+                patient_info.patient_name like #{patientInfo.patientName}"%" and
+            </if>
+            <if test="patientInfo.phone!=null and patientInfo.phone !=''">
+                patient_info.phone like #{patientInfo.phone}"%" and
+            </if>
+        </trim>
+    </select>
+
+
+    <!--根据id返回西药待退费项-->
+    <select id="showWaitRefundWPre" resultType="java.util.Map">
+        select medical_record_id as medicalRecordId,register_price as registerPrice,
+        w_prescribe.id as wPrescriberId,sale_unit as saleUnit,price as price,
+        wpre_batch.id as wPreBatchId,wpre_batch.medicines_name as medicinesName,
+        wpre_batch.batch_number as batchNumber,now_return_number as nowReturnNumber
+        from medical_record
+        left join w_prescribe using (medical_record_id)
+        left join wpre_batch on wpre_batch.w_prescribe_id=w_prescribe.id
+        where medical_record.is_return=1 and medical_record.register_status='已取药'
+        and wpre_batch.now_return_number!=0 and medical_record_id=#{medicalRecordId}
+    </select>
+
+    <!--根据id返回中药待退费项-->
+    <select id="showWaitRefundCPre" resultType="java.util.Map">
+        select medical_record_id as medicalRecordId,register_price as registerPrice,
+        c_prescribe.id as cPrescriberId,sale_unit as saleUnit,price as price,
+        cpre_batch.id as cPreBatchId,cpre_batch.medicines_name as medicinesName,
+        cpre_batch.batch_number as batchNumber, cpre_batch.source_area as sourceArea,now_return_number as nowReturnNumber
+        from medical_record
+        left join c_prescribe using (medical_record_id)
+        left join cpre_batch on cpre_batch.c_prescribe_id=c_prescribe.id
+        where medical_record.is_return=1 and medical_record.register_status='已取药'
+        and cpre_batch.now_return_number!=0 and medical_record_id=#{medicalRecordId}
+    </select>
+
+    <!--根据id返回治疗待退费项-->
+    <select id="showWaitRefundPro" resultType="java.util.Map">
+        select medical_record_id as medicalRecordId,register_price as registerPrice,
+        project.id as projectId,price as price,
+        pro_batch.id as proBatchId,pro_batch.project_name as projectName,
+        now_return_number as nowReturnNumber
+        from medical_record
+        left join project using (medical_record_id)
+        left join pro_batch on pro_batch.project_id=project.id
+        where medical_record.is_return=1 and medical_record.register_status='已取药'
+        and pro_batch.now_return_number!=0 and medical_record_id=#{medicalRecordId}
+    </select>
+
+    <!--根据患者id获取历史处方单-->
+    <select id="showHistoryList" resultType="com.hcc.pojo.MedicalRecord">
+        select * from medical_record
+        where patient_id=#{patientInfo.patientId} and consultation_date is not null
+    </select>
+
+</mapper>

@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hcc.mapper.ProjectMapper">
+
+    <resultMap id="ProjectMap" type="Project">
+        <id property="id" column="id" />
+        <result property="projectName" column="project_name"/>
+        <result property="number" column="number"/>
+        <result property="price" column="price"/>
+        <result property="projectInfo" column="project_info"/>
+        <result property="isSend" column="is_send"/>
+        <result property="isReturn" column="is_return"/>
+        <result property="projectStatus" column="project_status"/>
+        <association property="medicalRecord" javaType="MedicalRecord">
+            <id property="medicalRecordId" column="medical_record_id" />
+            <result property="registerDate" column="register_date"/>
+            <result property="consultationDate" column="consultation_date"/>
+            <result property="isSend" column="is_send"/>
+            <result property="isReturn" column="is_return"/>
+            <result property="isNeed" column="is_need"/>
+            <result property="registerStatus" column="register_status"/>
+        </association>
+    </resultMap>
+
+    <!--存储所有的治疗单-->
+    <insert id="insertAllPro" parameterType="java.util.List">
+        insert into project(medical_record_id,project_name,
+        number,price,project_info,is_send,is_return,project_status)
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.medicalRecord.medicalRecordId},#{item.projectName},
+            #{item.number},#{item.price},#{item.projectInfo},
+            #{item.isSend},#{item.isReturn},#{item.projectStatus})
+        </foreach>
+    </insert>
+
+    <!--批量更新治疗单-->
+    <update id="updateProList" parameterType="java.util.List">
+        update project
+        set is_send=
+        <foreach collection="list" item="item" index="index"
+                 separator=" " open="case" close="end">
+            when id=#{item.id} then #{item.isSend}
+        </foreach>
+        where id in
+        <foreach collection="list" index="index" item="item"
+                 separator="," open="(" close=")">
+            #{item.id}
+        </foreach>
+    </update>
+
+    <!--批量更新退药信息-->
+    <update id="updateReturnMedical"  parameterType="java.util.List">
+        update project
+        set is_return=
+        <foreach collection="list" item="item" index="index"
+                 separator=" " open="case" close="end">
+            when id=#{item.id} then #{item.isReturn}
+        </foreach>
+        where id in
+        <foreach collection="list" index="index" item="item"
+                 separator="," open="(" close=")">
+            #{item.id}
+        </foreach>
+    </update>
+
+    <!--收费详情搜索治疗项-->
+    <!--select id,medical_record_id,project_name,number,price-->
+    <select id="selectProByMrId" resultType="com.hcc.pojo.Project">
+        select *
+        from  project
+        where medical_record_id=#{medicalRecordId} and project_status='1'
+    </select>
+
+    <!--更加Id获取治疗项待发药列表-->
+    <select id="selectWaitSendProByMrId" resultType="com.hcc.pojo.Project">
+
+    </select>
+
+
+</mapper>

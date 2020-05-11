@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hcc.mapper.CPreBatchMapper">
+
+    <!--批量插入-->
+    <insert id="insertCPreBatchList" parameterType="java.util.List">
+        insert into cpre_batch(c_prescribe_id,medicines_id,
+        medicines_name,batch_number,source_area,production_date,
+        expiry_date,send_number,return_number,now_return_number,is_send,is_return,cb_status)
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.cPrescribeId},#{item.medicinesId},
+            #{item.medicinesName},#{item.batchNumber},
+            #{item.sourceArea},
+            #{item.productionDate},#{item.expiryDate},
+            #{item.sendNumber},#{item.returnNumber},#{item.nowReturnNumber},
+            #{item.isSend},#{item.isReturn},
+            #{item.cbStatus})
+        </foreach>
+    </insert>
+
+    <!--批量更新退药信息-->
+    <update id="upadetReturnCPreBatch" parameterType="java.util.List">
+        update cpre_batch
+        set is_return=
+        <foreach collection="list" item="item" index="index"
+                 separator=" " open="case" close="end">
+            when id=#{item.id} then #{item.isReturn}
+        </foreach>
+        ,return_number=
+        <foreach collection="list" item="item" index="index"
+                 separator=" " open="case" close="end">
+            when id=#{item.id} then return_number+#{item.returnNumber}
+        </foreach>
+        ,now_return_number=
+        <foreach collection="list" item="item" index="index"
+                 separator=" " open="case" close="end">
+            when id=#{item.id} then #{item.nowReturnNumber}
+        </foreach>
+        where id in
+        <foreach collection="list" index="index" item="item"
+                 separator="," open="(" close=")">
+            #{item.id}
+        </foreach>
+    </update>
+
+    <!--批量更新退费信息，nowReturnNumber清空，病历isReturn归零-->
+    <update id="updateRefundCPreBatch">
+        update cpre_batch
+        set now_return_number=
+        <foreach collection="list" item="item" index="index"
+                 separator=" " open="case" close="end">
+            when id=#{item.id} then #{item.nowReturnNumber}
+        </foreach>
+        where id in
+        <foreach collection="list" index="index" item="item"
+                 separator="," open="(" close=")">
+            #{item.id}
+        </foreach>
+    </update>
+
+    <!--中药批次详情单-->
+    <select id="selectCPreBatchByWPId" resultType="com.hcc.pojo.CPreBatch">
+         select * from cpre_batch
+        where c_prescribe_id=#{cprescribeId}
+    </select>
+
+</mapper>

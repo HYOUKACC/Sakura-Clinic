@@ -1,0 +1,36 @@
+{
+  "count": 3,
+  "code": 0,
+  "msg": "",
+  "data": [
+    {
+      "staffId":20190101,
+      "name":"HCC",
+      "nameCode":"HCC",
+      "sex":"男",
+      "entryDate":"2019-01-01",
+      "leaveDate":"",
+      "positionId":"管理员",
+      "status":"正常"
+    },
+    {
+      "staffId":20190102,
+      "name":"HC",
+      "nameCode":"HC",
+      "sex":"女",
+      "entryDate":"2019-01-02",
+      "leaveDate":"",
+      "positionId":"医生",
+      "status":"正常"
+    },{
+      "staffId":20190103,
+      "name":"Tom",
+      "nameCode":"TOM",
+      "sex":"男",
+      "entryDate":"2019-01-08",
+      "leaveDate":"2019-01-13",
+      "positionId":"工作人员",
+      "status":"锁定"
+    }
+  ]
+}

@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>数据监控</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../lib/layui-v2.5.5/css/layui.css" media="all">
+    <link rel="stylesheet" href="../css/public.css" media="all">
+
+</head>
+<body>
+<div class="layuimini-container">
+    <div class="layuimini-main">
+
+        <fieldset class="layui-elem-field layuimini-search">
+            <legend>数据监控</legend>
+            <div style="margin: 10px 10px 10px 10px">
+                <div class="layui-row" style="text-align: center">
+                    <div class="layui-col-md6" style="height: 250px" id="qualityId">
+
+                    </div>
+                    <div class="layui-col-md6" style="height: 250px" id="saleId">
+
+                    </div>
+                </div>
+            </div>
+        </fieldset>
+
+        <!--&lt;!&ndash;搜索框&ndash;&gt;-->
+        <!--<fieldset class="layui-elem-field layuimini-search">-->
+            <!--<legend>检索药品</legend>-->
+
+        <!--</fieldset>-->
+
+
+        <fieldset class="layui-elem-field layuimini-search">
+            <legend>即将过期(三个月内)</legend>
+            <div style="margin: 10px 10px 10px 10px">
+                <form class="layui-form layui-form-pane" action="" id="formSearchId">
+                    <div class="layui-form-item">
+                        <div class="layui-inline">
+                            <label class="layui-form-label" >条形码</label>
+                            <div class="layui-input-inline">
+                                <input  type="text" name="medicinesBarcode" autocomplete="off" class="layui-input" id="medicinesBarcodeId">
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <label class="layui-form-label">药品名</label>
+                            <div class="layui-input-inline">
+                                <input type="text" name="medicinesName" autocomplete="off" class="layui-input" id="medicinesNameId">
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <label class="layui-form-label">供应商</label>
+                            <div class="layui-input-inline">
+                                <input type="text" name="supplier" autocomplete="off" class="layui-input" id="supplierId">
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <input type="checkbox" name="ScanC" id="scanCodeId" title="扫描枪" lay-filter="scanCodeFilter">
+                        </div>
+                        <div class="layui-inline">
+                            <a class="layui-btn" lay-submit="" lay-filter="data-search-btn" style="background-color: #3CB371" id="btnSearchId">搜索</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div style="margin: 10px 10px 10px 10px">
+                <table class="layui-hide" id="currentTableId" lay-filter="currentTableFilter"></table>
+            </div>
+        </fieldset>
+        <!-- 监控工具栏-->
+        <script type="text/html" id="currentTableBar">
+            {{#  if(d.status === '在售'){ }}
+                <a class="layui-btn layui-btn-xs layui-btn-danger data-count-delete"  name="btnstatus" lay-event="setsale" style="background-color: #3CB371">下架</a>
+            {{#  } else if(d.status === '在库'){ }}
+                <a class="layui-btn layui-btn-xs layui-btn-danger data-count-delete"  name="btnstatus" lay-event="setsale" style="background-color: #FF4500">上架</a>
+            {{# } }}
+
+        </script>
+
+    </div>
+</div>
+<script src="../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
+<script src="../js/lay-config.js?v=1.0.4" charset="utf-8"></script>
+<script>
+
+    layui.use(['form', 'table','echarts'], function () {
+        var $ = layui.jquery,
+            form = layui.form,
+            medicineCenter = layui.table;
+            echartsPie = layui.echarts;
+
+
+        // 饼图配置
+        var qualityChart=echartsPie.init(document.getElementById('qualityId'));
+        // var optionQualiy={
+        //
+        // };
+       // qualityChart.setOption(optionQualiy);
+
+        // 销售监控
+        var saleChart=echartsPie.init(document.getElementById('saleId'));
+        // var optionSale={
+        //
+        // };
+        //saleChart.setOption(optionSale);
+
+        $.ajax({
+            url: '/countSale',
+            dataType: 'json',
+            type: 'get',
+            success: function (data) {
+                var trans=data['data'];
+                //console.log(trans);
+                saleChart.setOption({
+                    title: {
+                        text: '销售监控',
+                        x:'center',
+                        y: 'bottom'
+                    },
+                    tooltip: {},
+                    series : [
+                        {
+                            label: {
+                                textStyle: {
+                                    color: '#58A3D9'
+                                }
+                            },
+                            labelLine: {
+                                lineStyle: {
+                                    color: '#58A3D9'
+                                }
+                            },
+                            name: '销售状态',
+                            type: 'pie',
+                            radius: '70%',
+                            data:[
+                                {
+                                    value:trans.onSale,
+                                    name:'在售',
+                                    itemStyle: {
+                                        color: '#58A3D9'
+                                    }
+                                },
+                                {
+                                    value:trans.onStorage,
+                                    name:'在库',
+                                    itemStyle: {
+                                        color: '#C7E2F2'
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                });
+            }
+        });
+
+        $.ajax({
+            url: '/countQuality',
+            dataType: 'json',
+            type: 'get',
+            success: function (data) {
+                var trans=data['data'];
+                //console.log(trans);
+                qualityChart.setOption({
+                    title: {
+                        text: '质量监控',
+                        x:'center',
+                        y: 'bottom'
+                    },
+                    tooltip: {},
+                    series : [
+                        {
+                            label: {
+                                textStyle: {
+                                    color: '#3AB271'
+                                }
+                            },
+                            labelLine: {
+                                lineStyle: {
+                                    color: '#3AB271'
+                                }
+                            },
+                            name: '库存质量',
+                            type: 'pie',
+                            radius: '70%',
+                            data:[
+                                {
+                                    value:trans.normal,
+                                    name:'正常',
+                                    itemStyle: {
+                                        color: '#3AB271'
+                                    }
+                                },
+                                {
+                                    value:trans.warming,
+                                    name:'即将过期',
+                                    itemStyle: {
+                                        color: '#B6DEC8'
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                });
+            }
+        });
+
+        // echarts 窗口缩放自适应
+        $(window).resize(function(){
+            qualityChart.resize();
+            saleChart.resize();
+        });
+
+        // 加载数据表格
+        medicineCenter.render({
+            elem: '#currentTableId', // 绑定的元素
+            url: '/showMedicineWillExpire', // 表格的数据接口，展示表格都会经过这个接口
+            //even: true, // 开启隔行背景
+            limit: 3, // 定义每页显示几条数据
+            limits: [3, 6, 9], // 定义每页条数的选项
+            cols:
+                [
+                    [
+                        {field: 'medicinesBarcode', minWidth: 100, title: '条形码',event:'detial',style:'cursor: pointer;'},
+                        {field: 'medicinesName', minWidth: 80, title: '药品名',event:'detial',style:'cursor: pointer;'},
+                        {field: 'medicinesCategory', title: '药品类型', minWidth: 50,event:'detial',style:'cursor: pointer;'},
+                        {field: 'medicinesSpec', minWidth: 80, title: '药品规格',event:'detial',style:'cursor: pointer;'},
+                        {field: 'batchNumber', minWidth: 50, title: '批号', sort: true,templet:'#batchNumber',event:'detial',style:'cursor: pointer;'},
+                        {field: 'currentNumber', minWidth: 50, title: '库存', sort: true,templet:'#numberDisplay',event:'detial',style:'cursor: pointer;'},
+                        {field: 'expiryDate', minWidth: 80, title: '过期日期',event:'detial',style:'cursor: pointer;',templet:'#expiryDisplay'},
+                        {field: 'status', minWidth: 50, title: '库存状态', templet:'#statusDisplay',event:'detial',style:'cursor: pointer;'},
+                        {title: '操作', minWidth: 50, templet: '#currentTableBar', fixed: "right", align: "center"}
+                    ]
+                ],
+            page: { //支持传入laypage组件的所有参数（某些参数除外，如：jump/elem） - 详见文档
+                layout: ['prev', 'page', 'next', 'skip', 'limit', 'count'], //自定义分页布局
+                curr: 1, // 设定初始在第几页
+                groups: 3, //只显示几个连续页码
+                first: false, //显示首页
+                last: false //显示尾页
+            }
+        });
+
+        // 监听input的回车操作
+        $('.layui-input').keydown(function(event){
+            if(event.keyCode==13){
+                document.getElementById("btnSearchId").click(); // 点击搜索按钮
+            }
+        });
+
+        // 监听扫描枪选项是否勾选，勾选则聚焦到条码框
+        form.on('checkbox(scanCodeFilter)',function(data){
+            if(data.elem.checked==true){
+                $("#medicinesBarcodeId").focus(); // 焦点选在条码框
+                $('#medicinesNameId').attr("disabled",true);// 锁定药品名搜索框
+                $('#medicinesNameId').css("backgroundColor","#F5F5F5");
+                $('#supplierId').attr("disabled",true);// 锁定供应商搜索框
+                $('#supplierId').css("backgroundColor","#F5F5F5");
+                $("#patientNameId").val(""); // 姓名清空
+                $("#phoneId").val(""); // 电话清空
+            }else {
+                $('#medicinesNameId').attr("disabled",false);// 移除
+                $('#medicinesNameId').css("backgroundColor","#FFFFFF");
+                $('#supplierId').attr("disabled",false);
+                $('#supplierId').css("backgroundColor","#FFFFFF");
+            }
+        });
+
+        // 设置搜索按钮点击时的回调函数
+        // input回车事件，扫描枪回车事件，实质就是点击搜索按钮；
+        // 点击搜索按钮后，判断扫描枪选项是否勾起
+        // 如果勾起，那么查询完结果后，input框要清空数据；没有，则可以继续手动输入
+        $("#btnSearchId").click(function () {
+
+            // 监听搜索按钮操作，重载数据
+            form.on('submit(data-search-btn)', function (data) {
+
+                var obj = data.field; // 遍历表单参数，查看扫描框元素是否在数据中
+                // {medicinesBarcode: "1", medicinesName: "", supplier: ""}
+                // {medicinesBarcode: "1", medicinesName: "", supplier: "", ScanC: "on"}
+                $.each(obj, function(key, val){
+                    if(key=="ScanC" && val== "on"){
+                        $("#medicinesBarcodeId").focus(); // 焦点选在条码框
+                        $("#medicinesBarcodeId").val(""); // 条码框内容清空
+                        $("#medicinesNameId").val(""); // 药品名清空
+                        $("#supplierId").val(""); // 供应商清空
+                        data.field["medicinesName"]=""; // 药品名的值清空
+                        data.field["supplier"]=""; // 供应商的值清空
+
+                    }
+                });
+
+                // 监听搜索表单的sumbit方法，传入相应的值
+                // data.field方法，把对象转换成json格式
+                // JSON.stringify(data.field)方法，把json转换成string类型
+                // data.field["medicinesBarcode"]方法，根据json的键值获取value值
+                //执行搜索后的，表格重载，重载时会重新请求表格render方法中的接口
+                medicineCenter.reload('currentTableId', {
+                    page: {
+                        curr: 1 // 重新从第一页开始
+                    }
+                    , where: {
+                        // 为传入后台的键值对赋值
+                        // 当键值与后台pojo类对应的属性名相同时，SpringMVC会自动赋值，后台用对应的对象来接收即可
+                        medicinesBarcode: data.field["medicinesBarcode"],
+                        medicinesName:data.field["medicinesName"],
+                        supplier:data.field["supplier"]
+
+                    }
+                }, 'data');
+                return false;
+            });
+
+        });
+
+
+
+
+
+
+
+        // 封装函数，时间戳格式化函数
+        function timestampToTime(timestamp) {
+            //时间戳为10位需*1000，时间戳为13位的话不需乘1000
+            var date = new Date(timestamp);
+            Y = date.getFullYear() + '-';
+            M = (date.getMonth()+1 < 10 ? '0'+(date.getMonth()+1) : date.getMonth()+1) + '-';
+            D = date.getDate() + '';
+            h = date.getHours() + ':';
+            m = date.getMinutes() + ':';
+            s = date.getSeconds();
+            return Y+M+D;
+        }
+
+        function timestamp(timestamp) {
+            //时间戳为10位需*1000，时间戳为13位的话不需乘1000
+            var date = new Date(timestamp);
+            Y = date.getFullYear() + '-';
+            M = (date.getMonth()+1 < 10 ? '0'+(date.getMonth()+1) : date.getMonth()+1) + '-';
+            D = date.getDate() + ' ';
+            h = date.getHours() + ':';
+            m = date.getMinutes() + ':';
+            s = date.getSeconds();
+            return Y+M+D+h+m+s;
+        }
+
+        // 监听单元格内的事件，弹出详细信息
+        medicineCenter.on('tool(currentTableFilter)',function(obj){
+
+            // 取得行数据
+            var data=obj.data;
+
+
+
+            if (obj.event === 'setsale') {
+
+                // 下架，且重载表格
+                var trans=JSON.parse(JSON.stringify(obj.data)); // 转换为数组
+
+                // 为什么这里只能用get方法，post方法传进去，SpringMVC无法进行赋值？？？气死了
+                $.get("/updateStatus",{medicinesId:trans['medicinesId'],status:trans['status']});
+
+                var curr=$(".layui-laypage-em").next().html(); //当前页码值
+                medicineCenter.reload('currentTableId', { // 表格重载
+                    page: {
+                        curr: curr // 从当前页开始
+                    }
+                });
+
+            }
+
+
+            // 如果是点击的单元格是detial事件，弹框
+            if(obj.event === 'detial'){
+                var data = obj.data;
+
+                // 转换日期
+                var productiondate= timestampToTime(data['productionDate']);
+                var expirydate=timestampToTime(data['expiryDate']);
+
+                // 拼接弹出层数据
+                var text='<div style=\"padding: 50px; line-height: 22px; background-color:  #2E8B57; color: #fff; font-weight: bold;\">';
+                text=text+'药品名：'+data["medicinesName"]+'<br>'+
+                    '药品简码：'+data['medicinesCode']+'<br>'+
+                    '药品类型：'+data['medicinesCategory']+'<br>'+
+                    '规格：'+data['medicinesSpec']+'<br>'+
+                    '产品批号：'+data['batchNumber']+'<br>'+
+                    '生产日期：'+productiondate+'<br>'+
+                    '过期日期：'+expirydate+'<br>'+
+                    '生产厂商：'+data['oem']+'<br>'+
+                    '供应商：'+data['supplier']+'<br>'+
+                    '成本价：'+data['primePrice']+'￥<br>'+
+                    '售价：'+data['price']+'￥<br>'+
+                    '状态：'+data['status']+'<br>'
+                ;
+                text=text+'</div>';
+
+                layer.open({
+                    type: 1,
+                    skin: 'layui-layer-demo', //样式类名
+                    title:'药品详情',
+                    closeBtn: 0, //不显示关闭按钮
+                    anim: 2,
+                    shadeClose: true, //开启遮罩关闭
+                    content:text
+                });
+
+                //标注选中样式
+                //obj.tr.removeClass('layui-table-click');
+
+            }
+        });
+
+
+    });
+
+</script>
+
+<!--修改表格中的数据样式-->
+<script type="text/html" id="statusDisplay">
+    {{#  if(d.status === '在售'){ }}
+    <span style="color:#FF4500 ;font-weight: bold">{{ d.status }}</span>
+    {{#  } else if(d.status === '在库'){ }}
+
+    <span style="color: #3CB371;font-weight: bold">{{ d.status }}</span>
+    {{#  } else { }}
+    <span style="color: #FF4500;font-weight: bold">{{ d.status }}</span>
+    {{# } }}
+</script>
+
+<script type="text/html" id="expiryDisplay">
+    <span style="color: #FF4500;">
+        {{# var date=function(){
+            var date = new Date(d.expiryDate);
+            var Y = date.getFullYear() + '-';
+            var M = (date.getMonth()+1 < 10 ? '0'+(date.getMonth()+1) : date.getMonth()+1) + '-';
+            var D = date.getDate() + '';
+            var h = date.getHours() + ':';
+            var m = date.getMinutes() + ':';
+            var s = date.getSeconds();
+            return Y+M+D;
+            }
+        }}{{ date()}}</span>
+</script>
+
+
+
+</body>
+</html>

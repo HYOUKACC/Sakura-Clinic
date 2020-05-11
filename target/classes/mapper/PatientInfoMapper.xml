@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hcc.mapper.PatientInfoMapper">
+
+    <!--保存患者信息-->
+    <insert id="savePatient">
+        insert into patient_info (patient_id,patient_name,name_code,sex,birthday,address,phone,allergies,chronic,family_medical_history)
+        values(#{patientId},#{patientName},#{nameCode},#{sex},#{birthday},#{address},#{phone},#{allergies},#{chronic},#{familyMedicalHistory})
+    </insert>
+
+
+    <!--查询患者信息-->
+    <select id="selectPatient" resultType="com.hcc.pojo.PatientInfo">
+          select * from patient_info
+        <trim prefix="where" prefixOverrides="and" suffixOverrides="and">
+            <if test="patientId!=null and patientId !=''">
+                patient_id =#{patientId} and
+            </if>
+            <if test="patientName!=null and patientName !=''">
+                patient_name like #{patientName}"%" and
+            </if>
+            <if test="phone !=null and phone !=''">
+                phone like #{phone}"%" and
+            </if>
+        </trim>
+    </select>
+
+    <!--更新患者信息预诊界面-->
+    <update id="updatePrePatient">
+        update patient_info set
+        allergies=#{allergies},chronic=#{chronic},family_medical_history=#{familyMedicalHistory}
+        where patient_id=#{patientId}
+    </update>
+
+
+</mapper>

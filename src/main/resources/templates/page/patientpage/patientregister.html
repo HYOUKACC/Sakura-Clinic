@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>患者挂号</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../lib/layui-v2.5.5/css/layui.css" media="all">
+    <link rel="stylesheet" href="../css/public.css" media="all">
+    <link rel="stylesheet" href="../js/lay-module/step-lay/step.css" media="all">
+
+</head>
+<body>
+<div class="layuimini-container">
+    <div class="layuimini-main">
+
+        <div class="layui-fluid">
+            <div class="layui-card">
+                <div class="layui-card-body" style="padding-top: 40px;">
+                    <div class="layui-carousel" id="stepForm" lay-filter="stepForm" style="margin: 0 auto;">
+                        <div carousel-item>
+                            <div>
+                                <form class="layui-form" style="margin: 0 auto;max-width: 700px;padding-top: 40px;">
+                                    <div class="layui-form-item">
+                                        <div class="layui-row">
+                                            <!--左半边-->
+                                            <div class="layui-col-md6">
+                                                <div class="layui-row">
+                                                    <div class="layui-inline" style="margin: 10px 10px 10px 10px;" >
+                                                        <label class="layui-form-label" style="display: inline">就诊卡号</label>
+                                                        <div class="layui-input-inline" style="display: inline">
+                                                            <input  disabled type="text" name="patientId" autocomplete="off" class="layui-input" id="patientIdId" lay-verify="required">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="layui-row">
+                                                    <div class="layui-inline" style="margin: 10px 10px 10px 10px;">
+                                                        <label class="layui-form-label">姓名</label>
+                                                        <div class="layui-input-inline" >
+                                                            <input   type="text" name="patientName" autocomplete="off" class="layui-input" id="patientNameId" lay-verify="required">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="layui-row">
+                                                    <div class="layui-inline" style="margin: 10px 10px 10px 10px;">
+                                                        <label class="layui-form-label">科室</label>
+                                                        <div class="layui-input-inline" >
+                                                            <select name="departmentId"  id="departmentIdId" lay-verify="required" lay-filter="department">
+                                                                <option value=""></option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="layui-inline" style="margin: 10px 10px 10px 10px;">
+                                                    <label class="layui-form-label">医生</label>
+                                                    <div class="layui-input-inline" >
+                                                        <select name="staffId"  id="staffIdId" lay-verify="required" >
+                                                            <option value=""></option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                            <!--右半边-->
+                                            <div class="layui-col-md6">
+                                                <div class="layui-inline" style="margin: 10px 10px 10px 10px;" >
+                                                    <label class="layui-form-label">病历号</label>
+                                                    <div class="layui-input-inline">
+                                                        <input  disabled type="text" name="medicalRecordId" autocomplete="off" class="layui-input" id="medicalRecordIdId" lay-verify="required">
+                                                    </div>
+                                                </div>
+                                                <div class="layui-inline" style="margin: 10px 10px 10px 10px;">
+                                                    <label class="layui-form-label">初复诊</label>
+                                                    <div class="layui-input-inline" >
+                                                        <select name="diagnosisTimes"  id="diagnosisTimesId" lay-verify="required">
+                                                            <option value=""></option>
+                                                            <option value="初诊">初诊</option>
+                                                            <option value="复诊">复诊</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="layui-inline" style="margin: 10px 10px 10px 10px;">
+                                                    <label class="layui-form-label">挂号类型</label>
+                                                    <div class="layui-input-inline" >
+                                                        <select name="registerCategory"  id="registerCategoryId" lay-verify="required">
+                                                            <option value=""></option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="layui-row">
+                                                    <div class="layui-inline" style="margin: 10px 10px 10px 10px;">
+                                                        <label class="layui-form-label">挂号时间</label>
+                                                        <div class="layui-input-inline" >
+                                                            <input  disabled type="text" name="registerDate" autocomplete="off" class="layui-input" id="registerDateId" lay-verify="required">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="layui-form-item">
+                                        <div class="layui-row layui-col-space12" >
+                                            <div class=" layui-btn-group layui-col-md6 layui-col-md-offset5">
+                                                <button class="layui-btn data-add-btn" lay-submit lay-filter="formStep" style="background-color: #3CB371" >
+                                                    &emsp;下一步&emsp;
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                            <div>
+                                <form class="layui-form" style="margin: 0 auto;max-width: 460px;padding-top: 40px;">
+                                    <div class="layui-row">
+                                        <div class="layui-col-md8 layui-col-md-offset3">
+                                            <div class="layui-form-item">
+                                                    <div class="layui-row">
+                                                        <div class="layui-inline"style="margin: 10px 10px 10px 10px" >
+                                                            <label class="layui-form-label">姓名:</label>
+                                                            <div class="layui-input-block">
+                                                                <div class="layui-form-mid layui-word-aux" id="namecheckId"></div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="layui-row">
+                                                        <div class="layui-inline"style="margin: 10px 10px 10px 10px" >
+                                                            <label class="layui-form-label">初复诊:</label>
+                                                            <div class="layui-input-block">
+                                                                <div class="layui-form-mid layui-word-aux" id="diagnosisTimescheckId"></div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="layui-row">
+                                                        <div class="layui-inline"style="margin: 10px 10px 10px 10px" >
+                                                            <label class="layui-form-label">科室:</label>
+                                                            <div class="layui-input-block">
+                                                                <div class="layui-form-mid layui-word-aux" id="departmentcheckId"></div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="layui-row">
+                                                        <div class="layui-inline"style="margin: 10px 10px 10px 10px" >
+                                                            <label class="layui-form-label">医生:</label>
+                                                            <div class="layui-input-block">
+                                                                <div class="layui-form-mid layui-word-aux" id="staffcheckId"></div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="layui-row">
+                                                        <div class="layui-inline"style="margin: 10px 10px 10px 10px" >
+                                                            <label class="layui-form-label">挂号类型:</label>
+                                                            <div class="layui-input-block">
+                                                                <div class="layui-form-mid layui-word-aux" id="recordCatId"></div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                        </div>
+                                    </div>
+                                    <div class="layui-form-item">
+                                            <div class="layui-row layui-col-space10" >
+                                                <div class=" layui-col-md6 layui-col-md-offset4">
+                                                    <button class="layui-btn data-add-btn pre" lay-submit lay-filter="formStep" style="background-color: #3CB371" >
+                                                        上一步
+                                                    </button>
+                                                    <button class="layui-btn data-add-btn" lay-submit lay-filter="formStep2" style="background-color: #3CB371">
+                                                        确认收款
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    <br>
+                                </form>
+                            </div>
+                            <div>
+                                <div style="text-align: center;margin-top: 90px;">
+                                    <i class="layui-icon layui-circle"
+                                       style="color: white;font-size:30px;font-weight:bold;background: #3CB371;padding: 20px;line-height: 80px;">&#xe605;</i>
+                                    <div style="font-size: 24px;color: #333;font-weight: 500;margin-top: 30px;">
+                                        挂号成功
+                                    </div>
+                                </div>
+                                <div style="text-align: center;margin-top: 50px;">
+                                    <button class="layui-btn layui-btn-primary" id="closeBtn">关闭</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<script src="../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
+<script src="../js/lay-config.js?v=1.0.4" charset="utf-8"></script>
+<script>
+    layui.use([ 'form', 'step'], function () {
+        var $ = layui.$,
+            form = layui.form,
+            step = layui.step;
+
+        var result;
+
+        step.render({
+            elem: '#stepForm',
+            filter: 'stepForm',
+            width: '100%', //设置容器宽度
+            stepWidth: '550px',
+            height: '450px',
+            stepItems: [{
+                title: '填写挂号信息'
+            }, {
+                title: '确认挂号信息'
+            }, {
+                title: '完成'
+            }]
+        });
+
+        form.on('submit(formStep)', function (data) {
+            $('#namecheckId').html('&emsp;&emsp;'+$('#patientNameId').val());
+            $('#diagnosisTimescheckId').html('&emsp;&emsp;'+$('#diagnosisTimesId option:selected').text());
+            $('#departmentcheckId').html('&emsp;&emsp;'+$('#departmentIdId option:selected').text());
+            $('#staffcheckId').html('&emsp;&emsp;'+$('#staffIdId option:selected').text());
+            $('#recordCatId').html('&emsp;&emsp;'+$('#registerCategoryId option:selected').text());
+            result=data;
+            step.next('#stepForm');
+            return false;
+        });
+
+        form.on('submit(formStep2)', function (data) {
+            // 提交后台，成功就跳转
+            var send=result.field;
+            $.ajax({
+                url:"/addregister",    //请求的url地址
+                dataType:"json",   //返回格式为json
+                async:true, //请求是否异步
+                data:send,    //参数值
+                type:"POST",   //请求方式
+                success:function(req){
+                    //请求成功时处理
+
+                    if(req['data']=="success"){
+                        step.next('#stepForm');
+                    }else{
+                        step.pre('#stepForm');
+                        layer.msg("挂号失败，请重新尝试",{time: 1000,icon: 5});
+                    }
+                }
+            });
+            //console.log(send);
+            return false;
+        });
+
+        $('.pre').click(function () {
+            step.pre('#stepForm');
+        });
+
+        $('.next').click(function () {
+            step.next('#stepForm');
+        });
+
+        $("#closeBtn").click(function () {
+            var iframeIndex = parent.layer.getFrameIndex(window.name);
+            parent.layer.close(iframeIndex);
+        });
+
+        // 加载挂号科室
+        $.ajax({
+            url: '/selectOutDp',
+            dataType: 'json',
+            type: 'get',
+            success: function (data) {
+                var trans=data['data'];
+                $.each(trans, function (index, item) {
+                    // 下拉菜单里添加元素
+                    $("#departmentIdId").append('<option value="'+item.departmentId+'">'+item.departmentName+'</option>');
+                });
+                form.render("select");
+            }
+        });
+
+        // 根据选择的科室加载医生
+        form.on('select(department)', function(data){
+            var str={"departmentId":data.value};
+            $.post("/selectStaffDep",str,function (data) {
+                var trans=JSON.parse(data);
+                var result=trans['data'];
+                $("#staffIdId").empty();
+                $("#staffIdId").append('<option value=""></option>');
+                $.each(result, function (index, item) {
+                    // 下拉菜单里添加元素
+                    $("#staffIdId").append('<option value="'+item.staffId+'">'+item.name+'</option>');
+                });
+                form.render("select");
+            });
+        });
+
+        // 加载挂号类型
+        $.ajax({
+            url: '/selectRecodCat',
+            dataType: 'json',
+            type: 'get',
+            success: function (data) {
+                var trans=data['data'];
+                $.each(trans, function (index, item) {
+                    // 下拉菜单里添加元素
+                    $("#registerCategoryId").append('<option value="'+item.category+"  "+item.price+'">'+item.category+"  "+item.price+"￥"+'</option>');
+                });
+                form.render("select");
+            }
+        });
+    });
+</script>
+</body>
+</html>

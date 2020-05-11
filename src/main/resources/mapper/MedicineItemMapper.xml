@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hcc.mapper.MedicineItemMapper">
+
+
+    <!--<trim prefix="status =case" suffix="end,">-->
+    <!--<foreach collection="list" item="item" index="index">-->
+    <!--when id=#{item.id} then #{item.status}-->
+    <!--</foreach>-->
+    <!--else default_value-->
+    <!--</trim>-->
+
+    <!--添加药品 加入ut-->
+    <insert id="addMedicine" >
+        insert into medicine_item (
+        medicines_barcode,medicines_name,medicines_code,
+        medicines_category,dosage_form,medicines_spec,
+        packing_spec,medicines_unit,sale_unit,
+        current_number,number,batch_number,
+        production_date,expiry_date,storage_date,
+        oem,supplier,source_area,
+        prime_price,price,reviewer,update_time,status)
+        values (#{medicinesBarcode},#{medicinesName},#{medicinesCode},
+        #{medicinesCategory},#{dosageForm},#{medicinesSpec},
+        #{packingSpec},#{medicinesUnit},#{saleUnit},
+        #{currentNumber},#{number},#{batchNumber},
+        #{productionDate},#{expiryDate},#{storageDate},
+        #{oem},#{supplier},#{sourceArea},
+        #{primePrice},#{price},#{reviewer},#{updateTime},#{status})
+    </insert>
+
+    <!--编辑药品信息 加入ut-->
+    <update id="updateMedicine">
+        update medicine_item set
+        medicines_barcode=#{medicinesBarcode},
+        medicines_name=#{medicinesName},
+        medicines_code=#{medicinesCode},
+        medicines_category=#{medicinesCategory},
+        dosage_form=#{dosageForm},
+        medicines_spec=#{medicinesSpec},
+        sale_unit=#{saleUnit},
+        current_number=#{currentNumber},
+        number=#{number},batch_number=#{batchNumber},
+        production_date=#{productionDate},
+        expiry_date=#{expiryDate},
+        oem=#{oem},supplier=#{supplier},source_area=#{sourceArea},
+        prime_price=#{primePrice},price=#{price},
+        reviewer=#{reviewer},update_time=#{updateTime},
+        status=#{status}
+        where medicines_id=#{medicinesId}
+    </update>
+
+    <!--修改药品销售状态 加入ut-->
+    <update id="updateMedicineStatus">
+        update medicine_item set status=#{status} where medicines_id=#{medicinesId}
+    </update>
+
+    <!--<foreach collection="list" item="item" index="index"-->
+             <!--separator=" " open="case" close="end">-->
+        <!--when medicines_id=#{item.medicinesId} then current_number-#{item.currentNumber}-->
+    <!--</foreach>-->
+    <!--<trim prefix="status =case" suffix="end,">-->
+    <!--<foreach collection="list" item="item" index="index">-->
+    <!--when id=#{item.id} then #{item.status}-->
+    <!--</foreach>-->
+    <!--else default_value-->
+    <!--</trim>-->
+
+
+    <!--批量更新update库存-->
+    <update id="updateMedicialCurrentNumber" parameterType="java.util.List">
+        update medicine_item
+        set current_number=
+        <foreach collection="list" item="item" index="index"
+                 separator=" " open="case" close="end">
+            when medicines_id=#{item.medicinesId} then current_number-#{item.currentNumber}
+        </foreach>
+        where medicines_id in
+        <foreach collection="list" index="index" item="item"
+                 separator="," open="(" close=")">
+            #{item.medicinesId}
+        </foreach>
+    </update>
+
+    <!--批量更新退药库存-->
+    <update id="updateReturnMedical" parameterType="java.util.List">
+        update medicine_item
+        set current_number=
+        <foreach collection="list" item="item" index="index"
+                 separator=" " open="case" close="end">
+            when medicines_id=#{item.medicinesId} then current_number+#{item.currentNumber}
+        </foreach>
+        where medicines_id in
+        <foreach collection="list" index="index" item="item"
+                 separator="," open="(" close=")">
+            #{item.medicinesId}
+        </foreach>
+    </update>
+
+
+    <!--过期日期自动监控(小于等于当前日期)-->
+    <update id="expiryDateCheck">
+        update medicine_item
+        set status="过期",update_time=NOW()
+        where expiry_date &lt;= #{expiryDate} and status!="过期"
+    </update>
+
+    <!--查询药品-->
+    <select id="selectAllItem" resultType="com.hcc.pojo.MedicineItem">
+        select * from medicine_item
+        <trim prefix="where" prefixOverrides="and" suffixOverrides="and">
+            <if test="medicinesBarcode!=null and medicinesBarcode !=''">
+                 medicines_barcode like #{medicinesBarcode}"%" and
+            </if>
+            <if test="medicinesName!=null and medicinesName !=''">
+                 medicines_name like #{medicinesName}"%" and
+            </if>
+            <if test="supplier !=null and supplier !=''">
+                supplier like #{supplier}"%" and
+            </if>
+        </trim>
+    </select>
+
+    <!--根据药品名查询信息-->
+    <select id="selectMedicalItemByName" resultType="com.hcc.pojo.MedicineItem">
+        select * from medicine_item
+        where medicines_name=#{medicinesName} and status='在售' and current_number>0
+    </select>
+
+
+    <!--三个月内即将过期药品显示-->
+    <select id="willExpirySelect" resultType="com.hcc.pojo.MedicineItem">
+        select * from medicine_item
+        where status!='过期'
+        <![CDATA[
+          and DATE_FORMAT(expiry_date , '%Y-%m-%d')<=  DATE_FORMAT(#{expiryDate}, '%Y-%m-%d')
+        ]]>
+        <trim prefix="and" prefixOverrides="and" suffixOverrides="and">
+            <if test="medicinesBarcode!=null and medicinesBarcode !=''">
+                medicines_barcode like #{medicinesBarcode}"%" and
+            </if>
+            <if test="medicinesName!=null and medicinesName !=''">
+                medicines_name like #{medicinesName}"%" and
+            </if>
+            <if test="supplier !=null and supplier !=''">
+                supplier like #{supplier}"%" and
+            </if>
+        </trim>
+    </select>
+
+    <!--销售监控-->
+    <select id="countSale" resultType="java.util.Map">
+        select
+        sum(case when status='在售' then 1 else 0 end) as onSale,
+        sum(case when status='在库' then 1 else 0 end) as onStorage
+        from medicine_item
+        where status!='过期'
+    </select>
+
+
+    <!--质量监控-->
+    <select id="countQuality" resultType="java.util.Map">
+        select
+        sum(case when expiry_date > #{expiryDate} then 1 else 0 end) as normal,
+        sum(case when expiry_date &lt;=#{expiryDate} then 1 else 0 end) as warming
+        from medicine_item
+        where status!='过期'
+    </select>
+
+
+</mapper>

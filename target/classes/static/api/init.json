@@ -1,0 +1,121 @@
+{
+  "clearInfo": {
+    "clearUrl": "api/clear.json"
+  },
+  "homeInfo": {
+    "title": "欢迎页",
+    "icon": "fa fa-home",
+    "href": "/welcome"
+  },
+  "logoInfo": {
+    "title": "樱花诊所",
+    "image": "images/sakura.png",
+    "href": ""
+  },
+  "menuInfo": {
+    "currency": {
+      "title": "",
+      "icon": "",
+      "child": [
+        {"title": "挂号收费",
+          "href": "page/menu.html",
+          "icon": "fa fa-home",
+          "target": "_self",
+          "child":[
+            {
+              "title": "挂号登记",
+              "href": "/patientCenter",
+              "icon": "",
+              "target": "_self"
+            },
+            {
+              "title": "窗口收费",
+              "href": "/chargeCenter",
+              "icon": "",
+              "target": "_self"
+            },
+            {
+              "title": "窗口退费",
+              "href": "/refundCenter",
+              "icon": "",
+              "target": "_self"
+            }
+          ]
+        },
+        {"title": "就诊管理",
+          "href": "page/menu.html",
+          "icon": "fa fa-home",
+          "target": "_self",
+          "child":[
+            {
+              "title": "今日候诊",
+              "href": "/waitPatient",
+              "icon": "",
+              "target": "_self"
+            }
+          ]
+        },
+        {
+          "title": "药房管理",
+          "href": "/welcome1",
+          "icon": "fa fa-home",
+          "target": "_self",
+          "child": [
+            {
+              "title": "数据监控",
+              "href": "/showDataMonitor",
+              "icon": "",
+              "target": "_self"
+            },
+            {
+              "title": "药品管理",
+              "href": "/showMedicinePage",
+              "icon": "",
+              "target": "_self"
+            },
+            {
+              "title": "窗口取药",
+              "href": "/sendMedicine",
+              "icon": "",
+              "target": "_self"
+            },
+            {
+              "title": "窗口退药",
+              "href": "/returnMedicine",
+              "icon": "",
+              "target": "_self"
+            }
+          ]
+        },
+        {
+          "title": "员工管理",
+          "href": "page/menu.html",
+          "icon": "fa fa-home",
+          "target": "_self",
+          "child":[
+            {
+              "title": "员工信息",
+              "href": "/staffCenter",
+              "icon": "",
+              "target": "_self"
+            },
+            {
+              "title": "账号审核",
+              "href": "/staffVerifyPage",
+              "icon": "",
+              "target": "_self"
+            },
+            {
+              "title": "权限管理",
+              "href": "/staffAuthorityCenterPage",
+              "icon": "",
+              "target": "_self"
+            }
+          ]
+        }
+
+      ]
+    }
+
+  }
+}

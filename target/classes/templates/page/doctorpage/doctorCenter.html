@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>今日候诊</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../lib/layui-v2.5.5/css/layui.css" media="all">
+    <link rel="stylesheet" href="../css/public.css" media="all">
+    <style>
+        p{
+            white-space: nowrap;      /*超出的空白区域不换行*/
+            overflow: hidden;         /*超出隐藏*/
+            text-overflow: ellipsis;  /*文本超出显示省略号*/
+        }
+        #totalNow{
+            white-space: nowrap;      /*超出的空白区域不换行*/
+            overflow: hidden;         /*超出隐藏*/
+            text-overflow: ellipsis;  /*文本超出显示省略号*/
+        }
+    </style>
+</head>
+<body >
+<div class="layuimini-container">
+    <div class="layuimini-main">
+        <!--搜索框-->
+        <fieldset class="layui-elem-field layuimini-search">
+            <legend>检索患者</legend>
+            <div style="margin: 10px 10px 10px 10px">
+                <form class="layui-form layui-form-pane" action="" id="formSearchId">
+                    <div class="layui-form-item">
+                        <div class="layui-inline">
+                            <label class="layui-form-label" >就诊卡</label>
+                            <div class="layui-input-inline">
+                                <input  type="text" name="patientId" autocomplete="off" class="layui-input" id="patientIdId">
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <label class="layui-form-label">姓名</label>
+                            <div class="layui-input-inline">
+                                <input type="text" name="patientName" autocomplete="off" class="layui-input" id="patientNameId">
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <label class="layui-form-label">手机号</label>
+                            <div class="layui-input-inline">
+                                <input type="text" name="phone" autocomplete="off" class="layui-input" id="phoneId">
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <input type="checkbox" name="ScanC" id="scanCodeId" title="扫描枪" lay-filter="scanCodeFilter">
+                        </div>
+                        <div class="layui-inline">
+                            <a class="layui-btn" lay-submit="" lay-filter="data-search-btn" style="background-color: #3CB371" id="btnSearchId">搜索</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </fieldset>
+        <fieldset class="layui-elem-field layuimini-search" style="margin-top: 10px;">
+            <legend>今日候诊</legend>
+            <form class="layui-form">
+                <div class="layui-row">
+                    <div class="layui-inline" style="margin: 10px 10px 10px 10px;">
+                        <label class="layui-form-label">科室</label>
+                        <div class="layui-input-inline" >
+                            <select name="departmentId"  id="departmentIdId" lay-verify="required" lay-filter="department">
+                                <option value=""></option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="layui-inline" style="margin: 10px 10px 10px 10px;">
+                        <label class="layui-form-label">医生</label>
+                        <div class="layui-input-inline" >
+                            <select name="staffId"  id="staffIdId" lay-verify="required" lay-filter="staff">
+                                <option value=""></option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="layui-inline layui-col-md-offset4" >
+                            <span class="layui-badge" id="totalNow" style="width: 110px"></span>
+                    </div>
+                </div>
+            </form>
+            <div style=" background-color: #F2F2F2;height: 400px;padding:5px 0;text-align: center" id="flowDiv">
+                    <ul class="flow-default " id="laypatientId" style="overflow: auto;width: 100%;height: 400px;" lay-filter="flow">
+
+                    </ul>
+            </div>
+        </fieldset>
+
+
+
+
+    </div>
+</div>
+<script src="../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
+<script src="../js/lay-config.js?v=1.0.4" charset="utf-8"></script>
+<script>
+
+    layui.use(['form', 'table','flow'], function () {
+        var $ = layui.jquery,
+            form = layui.form;
+
+        var flow = layui.flow;
+
+        var inputValue;
+
+        // 监听input的回车操作
+        $('.layui-input').keydown(function(event){
+            if(event.keyCode==13){
+                document.getElementById("btnSearchId").click(); // 点击搜索按钮
+            }
+        });
+
+
+
+        // 监听扫描枪选项是否勾选，勾选则聚焦到条码框
+        form.on('checkbox(scanCodeFilter)',function(data){
+            if(data.elem.checked==true){
+                $("#patientIdId").focus(); // 焦点选在条码框
+                $('#patientNameId').attr("disabled",true);// 锁定姓名搜索框
+                $('#patientNameId').css("backgroundColor","#F5F5F5");
+                $('#phoneId').attr("disabled",true);// 锁定电话搜索框
+                $('#phoneId').css("backgroundColor","#F5F5F5");
+                $("#patientNameId").val(""); // 姓名清空
+                $("#phoneId").val(""); // 电话清空
+            }else {
+
+                $('#patientNameId').attr("disabled",false);// 移除
+                $('#patientNameId').css("backgroundColor","#FFFFFF");
+                $('#phoneId').attr("disabled",false);
+                $('#phoneId').css("backgroundColor","#FFFFFF");
+            }
+        });
+
+        // 设置搜索按钮点击时的回调函数
+        // input回车事件，扫描枪回车事件，实质就是点击搜索按钮；
+        // 点击搜索按钮后，判断扫描枪选项是否勾起
+        // 如果勾起，那么查询完结果后，input框要清空数据；没有，则可以继续手动输入
+        $("#btnSearchId").click(function () {
+
+            // 监听搜索按钮操作，加载数据
+            form.on('submit(data-search-btn)', function (data) {
+
+                var obj = data.field; // 遍历表单参数，查看扫描框元素是否在数据中
+                $.each(obj, function(key, val){
+                    if(key=="ScanC" && val== "on"){
+                        $("#patientIdId").focus(); // 焦点选在条码框
+                        $("#patientIdId").val(""); // 条码框内容清空
+                        $("#patientNameId").val(""); // 姓名清空
+                        $("#phoneId").val(""); // 电话清空
+                        data.field["patientName"]=""; // 姓名的值清空
+                        data.field["phone"]=""; // 电话的值清空
+
+                    }
+
+                });
+
+                // 监听搜索表单的sumbit方法，传入相应的值
+                // data.field方法，把对象转换成json格式
+                // JSON.stringify(data.field)方法，把json转换成string类型
+                // data.field["patientId"]方法，根据json的键值获取value值
+                inputValue=data.field["patientId"];
+                flowLoad('search');
+                return false;
+            });
+
+        });
+
+
+        // 封装函数，时间戳格式化函数
+        function timestampToTime(timestamp) {
+            //时间戳为10位需*1000，时间戳为13位的话不需乘1000
+            var date = new Date(timestamp);
+            Y = date.getFullYear() + '-';
+            M = (date.getMonth()+1 < 10 ? '0'+(date.getMonth()+1) : date.getMonth()+1) + '-';
+            D = date.getDate() + ' ';
+            h = date.getHours() + ':';
+            m = date.getMinutes() + ':';
+            s = date.getSeconds();
+            return Y+M+D;
+        }
+
+        // 计算年龄
+        function getAge(age){
+            var ages = '';
+            var birthday = new Date(age);
+            var now=new Date();
+            var day = Math.ceil((now-birthday)/(60*60*1000*24));
+            var year = Math.floor(day/365);
+            var y = day%365;
+            var month = Math.floor(y/30);
+            var d = Math.floor(day%365%30);
+            if(year > 0){
+                ages += year + '岁';
+            }else if(month >0){
+                ages += month + '月';
+            }else if(d>0){
+                ages += (d-1)+'天';
+            }
+            return ages;
+        }
+
+        // 分装流加载函数
+        function flowLoad(action){
+            var patientIdId=inputValue; // 就诊卡
+            var patientNameId=$('#patientNameId').val(); // 患者姓名
+            var phoneId=$('#phoneId').val(); // 电话
+            var departmentIdId=$('#departmentIdId').val(); // 科室id
+            var staffIdId=$('#staffIdId').val(); // 医生id
+            var str; // 变量存储
+            if(action=='search'){ // 搜索框查询
+                // 1.取卡号，取姓名，取电话号码 2.取消选中科室和医生 3.查询
+                str={"patientId":patientIdId,"patientName":patientNameId,"phone":phoneId,"page":1,"limit":6};
+                $("#staffIdId").empty();
+                $("#departmentIdId").empty();
+                $("#departmentIdId").append('<option value=""></option>');
+                $.ajax({
+                    url: '/selectOutDp',
+                    dataType: 'json',
+                    type: 'get',
+                    success: function (data) {
+                        var trans=data['data'];
+                        $.each(trans, function (index, item) {
+                            // 下拉菜单里添加元素
+                            $("#departmentIdId").append('<option value="'+item.departmentId+'">'+item.departmentName+'</option>');
+                        });
+                        form.render("select");
+                    }
+                });
+            }else if(action=='department'){ // 科室查询
+                // 1.取科室 2.查询 3.取消医生选择
+                str={"departmentId":departmentIdId,"page":1,"limit":6};
+                $('#staffIdId').attr('value','');
+                $("#patientIdId").val(""); // 条码框内容清空
+                $("#patientNameId").val(""); // 姓名清空
+                $("#phoneId").val(""); // 电话清空
+            }else if(action=='staff'){ // 医生查询
+                // 1.取科室，取医生 2.查询
+                str={"departmentId":departmentIdId,"staffId":staffIdId,"page":1,"limit":6};
+                $("#patientIdId").val(""); // 条码框内容清空
+                $("#patientNameId").val(""); // 姓名清空
+                $("#phoneId").val(""); // 电话清空
+            }
+            //console.log(str);
+            $("#laypatientId").remove();
+            $('#flowDiv').append('<ul class="flow-default " id="laypatientId" style="overflow: auto;width: 100%;height: 400px" lay-filter="flow">');
+
+            flow.load({
+                elem: '#laypatientId', //流加载容器
+                scrollElem: '#laypatientId', //滚动条所在元素
+                isAuto:true,
+                done: function(page, next){ //执行下一页的回调
+                    var lis = [];
+                    str["page"]=page;
+                    $.post("/waitPatientList",str,function (res){
+                        res=JSON.parse(res);
+
+                        var data=res['data'];
+                        var pages=res['count'];
+                        $('#totalNow').html("今日候诊："+pages);
+                        layui.each(data, function(index, item){
+                            var text=makeCard(item);
+                            lis.push(text);
+                        });
+                        next(lis.join(''), page < (Math.floor(pages/6)+1)); // 总页数
+                    });
+                }
+            });
+        }
+
+        // 制作卡片
+        function makeCard(item){
+            var img=item['patientInfo']['sex'];
+            var msg=item['registerStatus'];
+            var btnStyle='background-color:#6495ED';
+            if(img=='男'){
+                img='../images/man1.png';
+            }else{
+                img='../images/women1.png'
+            }
+
+            if(msg=='已挂号'){
+                msg='预诊';
+            }else {
+                btnStyle='background-color:#CCCDE0';
+            }
+
+            var text='<div class="layui-card layui-inline" style="margin: 10px;height: 185px;width: 300px;">\n' +
+                '<div class="layui-card-header">\n' +
+                '<div class="layui-row" style="text-align: left">\n' +
+                '卡号：' +item['patientInfo']['patientId']+
+                '</div>\n' +
+                '</div>\n' +
+                '<div class="layui-card-body">\n' +
+                '<div class="layui-row layui-col-space5">\n' +
+                '<!--左半边-->\n' +
+                '<div class="layui-col-md4">\n' +
+                '<img src="'+img+'" style="height: 90px;width: 90px">\n' +
+                '</div>\n' +
+                '<!--右半边-->\n' +
+                '<div class="layui-col-md7 layui-col-md-offset1">\n' +
+                '<div class="layui-row" style="text-align: left;overflow:hidden;">\n' +
+                '<p >'+
+                '姓名：'+item['patientInfo']['patientName']+
+                '</p> '+
+                '</div>\n' +
+                '<div class="layui-row" style="text-align: left;overflow:hidden">\n' +
+                '<p >'+
+                '年龄：' +getAge(item['patientInfo']['birthday'])+
+                '</p> '+
+                '</div>\n' +
+                '<div class="layui-row" style="text-align: left;overflow:hidden">\n' +
+                '<p >'+
+                '科室：' +item['staffInfo']['staffDepartment']['departmentName']+
+                '</p> '+
+                '</div>\n' +
+                '<div class="layui-row" style="text-align: left;overflow:hidden">\n' +
+                '<p >'+
+                '医生：' +item['staffInfo']['name']+
+                '</p> '+
+                '</div>\n' +
+                '</div>\n' +
+                '</div>\n' +
+                '<div class="layui-row layui-col-space5">\n' +
+                '<div hidden id="medicalidHidd">'+item['medicalRecordId']+
+                '</div>'+
+                '<div class="layui-col-md5 layui-col-md-offset6">\n' +
+                '<button class="layui-btn layui-btn-xs" style="'+btnStyle+'" id="prebtn" value="'+item['medicalRecordId']+'">'+msg+'</button>\n' +
+                '<button class="layui-btn layui-btn-xs" style="background-color: #3CB371" id="rebtn" value="'+item['medicalRecordId']+'">接诊</button>\n' +
+                '</div>\n' +
+                '</div>\n' +
+                '</div>\n' +
+                '</div>';
+            return text;
+        }
+
+
+        // 启动页面懒加载患者信息
+        flow.load({
+            elem: '#laypatientId', //流加载容器
+            scrollElem: '#laypatientId', //滚动条所在元素
+            isAuto:true,
+            done: function(page, next){ //执行下一页的回调
+                var lis = [];
+                var str={"page":page,"limit":6};
+                $.post("/waitPatientListDefault",str,function (res){
+                    res=JSON.parse(res);
+                    var data=res['data'];
+                    var pages=res['count'];
+                    $('#totalNow').html("今日候诊："+pages);
+                    layui.each(data, function(index, item){
+                        //console.log(item);
+                        var text=makeCard(item);
+                        lis.push(text);
+                    });
+                    next(lis.join(''), page < (Math.floor(pages/6)+1)); // 总页数
+                });
+
+            }
+        });
+
+
+
+        // 自动加载挂号科室
+        $.ajax({
+            url: '/selectOutDp',
+            dataType: 'json',
+            type: 'get',
+            success: function (data) {
+                var trans=data['data'];
+                $.each(trans, function (index, item) {
+                    // 下拉菜单里添加元素
+                    $("#departmentIdId").append('<option value="'+item.departmentId+'">'+item.departmentName+'</option>');
+                });
+                form.render("select");
+            }
+        });
+
+        // 根据选择的科室加载医生
+        form.on('select(department)', function(data){
+            var str={"departmentId":data.value};
+            $.post("/selectStaffDep",str,function (data) {
+                var trans=JSON.parse(data);
+                var result=trans['data'];
+                $("#staffIdId").empty();
+                $("#staffIdId").append('<option value=""></option>');
+                $.each(result, function (index, item) {
+                    // 下拉菜单里添加元素
+                    $("#staffIdId").append('<option value="'+item.staffId+'">'+item.name+'</option>');
+                });
+                form.render("select");
+            });
+            // 同时加载当前科室候诊患者
+            flowLoad('department');
+        });
+
+        // 选中医生加载患者
+        form.on('select(staff)', function(data){
+            // 加载当前医生的候诊患者
+            flowLoad('staff');
+        });
+
+        // 监听预诊和接诊按钮
+        // 由于患者卡片是动态加载的，因此普通监听$().on("",function(){})，会失效；
+        // 所以要使用这个方法，来处理动态加载的监听
+        $(document).on("click", ".layui-btn-xs",function () {
+
+            // 获取当前对象value值
+            var medicalRecordId = $(this).attr("value"); // 读取病历号
+            var btnevent=$(this).attr("id"); // 判断是哪一个按钮
+            var url=''; // 跳转哪个页面
+            var tit='页面'; // 子页面标题
+            var wide='100%';
+            var hight='100%';
+            if(btnevent=='prebtn'){
+                url='/preReceive';
+                tit='患者预诊';
+                wide='80%';
+                hight='87%';
+            }else if(btnevent=='rebtn'){
+                url='/receive';
+                tit='患者接诊';
+            }
+
+            // 通过就诊卡，读取患者基本数据，传递到子页面中
+            var str={"medicalRecordId":medicalRecordId};
+            $.ajax(
+                {
+                    url:'/showMedicalDetail',
+                    datatype:'json',
+                    data:str,
+                    type:'get',
+                    success:function (data) {
+                        var result=JSON.parse(data);
+                        //console.log("data"+data);
+                        var medicalRec=result['data']['medicalRecored'];
+                        var patientInfo=result['data']['PatientInfo'][0];
+                        var staffInfos=result['data']['staffInfos'][0];
+                        var staffDepartment=result['data']['staffInfos'][0]['staffDepartment'];
+                        //console.log(staffInfos);
+
+                        layer.open({
+                            title:tit,
+                            type:2,
+                            shade:0.2,
+                            maxmin:false,
+                            shadeClose:false,
+                            area:[wide,hight],
+                            content:[url],
+                            success: function(layero, index){
+                                var body = layer.getChildFrame('body', index);
+                                var iframeWin = window[layero.find('iframe')[0]['name']]; //得到iframe页的窗口对象，执行iframe页的方法：iframeWin.method();
+
+                                // 传递就诊时间
+                                var nowTime=new Date();
+                                body.find('#consultationDate2Id').html(timestampToTime(nowTime.getTime()));
+
+                                $.each(medicalRec,function (key,val) { // 遍历患者病历数据，进行赋值
+                                    if(val!=0){
+
+                                        if(key=='registerDate'){
+                                            val=timestampToTime(val);
+                                        }
+
+                                        body.find('#'+key+'Id').val(val); // 为子元素赋值
+                                        //console.log('#'+key+'2Id');
+                                        //console.log(val);
+
+                                        body.find('#'+key+'2Id').html(val); // 为子元素赋值
+
+
+                                    }
+                                 });
+
+                                $.each(patientInfo,function (key,val) { // 遍历患者基础数据，进行赋值
+
+                                    if(key=='birthday'){
+                                        val=getAge(val);
+                                    }
+                                    body.find('#'+key+'Id').val(val); // 为子元素赋值
+
+                                    body.find('#'+key+'2Id').html(val); // 为子元素赋值
+
+                                });
+
+                                $.each(staffInfos,function (key,val) { // 遍历员工基础数据，进行赋值
+
+                                    body.find('#'+key+'Id').val(val); // 为子元素赋值
+
+                                    body.find('#'+key+'2Id').html(val); // 为子元素赋值
+
+
+                                });
+
+                                $.each(staffDepartment,function (key,val) { // 遍历员工部门基础数据，进行赋值
+
+                                    body.find('#'+key+'Id').val(val); // 为子元素赋值
+
+                                    body.find('#'+key+'2Id').html(val); // 为子元素赋值
+
+                                });
+                            },
+                            end:function (){
+                                var departmentIdId=$('#departmentIdId').val(); // 科室id
+                                var staffIdId=$('#staffIdId').val(); // 医生id
+                                if(departmentIdId=="" && staffIdId==""){
+                                    //alert("kong");
+                                    $("#laypatientId").remove();
+                                    $('#flowDiv').append('<ul class="flow-default " id="laypatientId" style="overflow: auto;width: 100%;height: 400px" lay-filter="flow">');
+                                    flow.load({
+                                        elem: '#laypatientId', //流加载容器
+                                        scrollElem: '#laypatientId', //滚动条所在元素
+                                        isAuto:true,
+                                        done: function(page, next){ //执行下一页的回调
+                                            var lis = [];
+                                            var str={"page":page,"limit":6};
+                                            $.post("/waitPatientListDefault",str,function (res){
+                                                res=JSON.parse(res);
+                                                var data=res['data'];
+                                                var pages=res['count'];
+                                                $('#totalNow').html("今日候诊："+pages);
+                                                layui.each(data, function(index, item){
+                                                    //console.log(item);
+                                                    var text=makeCard(item);
+                                                    lis.push(text);
+                                                });
+                                                next(lis.join(''), page < (Math.floor(pages/6)+1)); // 总页数
+                                            });
+                                        }
+                                    });
+                                }else if(staffIdId!=""){
+                                   // alert("staff");
+                                    flowLoad('staff');
+                                }else {
+                                   // alert("dep");
+                                    flowLoad('department');
+                                }
+
+                            }
+                        });
+                    }
+                }
+            );
+
+            return false;
+        });
+
+
+
+
+
+    });
+
+</script>
+
+
+
+</body>
+</html>

@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>发药清单</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../lib/layui-v2.5.5/css/layui.css" media="all">
+    <link rel="stylesheet" href="../css/public.css" media="all">
+
+    <style>
+        #flow ::-webkit-scrollbar{/*滚动条整体样式*/
+            width:1px;     /*高宽分别对应横竖滚动条的尺寸*/
+            height: 0px;
+            scrollbar-arrow-color:red;
+
+        }
+
+        #flow ::-webkit-scrollbar-thumb{
+
+            background:#C1C1C1; /* 滚动条内部滑块颜色*/
+        }
+
+
+        .TextTitle{
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .TextSum{
+            font-size: 13px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<div class="layuimini-container">
+    <div class="layuimini-main" id="flow">
+
+        <div id="mainDiv" style="height: 550px;overflow: auto">
+            <div class="layui-row" id="flowDiv" >
+                <input type="hidden" name="medicalRecordId" id="medicalRecordIdId"   class="layui-input" >
+                <input type="hidden" name="patientId" id="patientIdId"   class="layui-input" >
+                <!--<div class="layui-col-md4">-->
+                    <fieldset class="layui-elem-field layuimini-search">
+                        <legend>西药明细</legend>
+                        <div style="margin: 10px 10px 10px 10px" id="wPrescribeTableDivId">
+                            <table class="layui-hide" id="wPreTableId" lay-filter="wPreTableFilter"></table>
+                        </div>
+                        <!-- 监控西药明细工具栏-->
+                        <script type="text/html" id="wPrescribeTableBar">
+                            <a class="layui-btn layui-btn-xs data-count-edit" name="btnWPBatch" lay-event="batchDetail" style="background-color: #3CB371">批次</a>
+                        </script>
+                    </fieldset>
+                <br>
+                <!--</div>-->
+                <!--<div class="layui-col-md4">-->
+                    <fieldset class="layui-elem-field layuimini-search">
+                        <legend>中药明细</legend>
+                        <div style="margin: 10px 10px 10px 10px" id="cPrescribeTableDivId">
+                            <table class="layui-hide" id="cPreTableId" lay-filter="cPreTableFilter"></table>
+                        </div>
+                        <!-- 监控中药明细工具栏-->
+                        <script type="text/html" id="cPrescribeTableBar">
+                            <a class="layui-btn layui-btn-xs data-count-edit" name="btnCPBatch" lay-event="batchDetail" style="background-color: #3CB371">批次</a>
+                        </script>
+                    </fieldset>
+                <br>
+                <!--</div>-->
+                <!--<div class="layui-col-md4">-->
+                    <fieldset class="layui-elem-field layuimini-search">
+                        <legend>治疗项明细</legend>
+                        <div style="margin: 10px 10px 10px 10px" id="projectTableDivId">
+                            <table class="layui-hide" id="projectTableId" lay-filter="projectTableFilter"></table>
+                        </div>
+                    </fieldset>
+                <!--</div>-->
+                <br>
+                <br>
+                <div class="layui-row layui-col-space12">
+                    <div class="layui-btn-group layui-col-md6 layui-col-md-offset3">
+                        <button class="layui-btn data-add-btn layui-col-md12 layui-btn-lg" style="background-color: #3CB371;height: 60px">确认发药</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!--发药数-->
+        <script type="text/html" id="numberTem">
+            {{d.number}}<i class="layui-icon " style="position: absolute;right: 8px;font-weight: bold;font-size: 14px" >{{d.saleUnit}}</i>
+        </script>
+        <!--单价模板（通用）-->
+        <script type="text/html" id="priceTem">
+            {{ d.price }}<i class="layui-icon layui-icon-rmb" style="position: absolute;right: 8px;font-weight: bold;font-size: 14px" ></i>
+        </script>
+        <!--总量模板（中西药通用）-->
+        <script type="text/html" id="durationTem">
+            {{d.duration}}<i class="layui-icon " style="position: absolute;right: 8px;font-weight: bold;font-size: 14px" >剂</i>
+        </script>
+        <!--总价模板（通用）-->
+        <script type="text/html" id="singleDoseTem">
+            {{ d.singleDose }}<i class="layui-icon" style="position: absolute;right: 8px;font-weight: bold;font-size: 14px" >{{d.saleUnit}}</i>
+        </script>
+        <!--库存模板（中西药通用）-->
+        <script type="text/html" id="currentNumberTem">
+            {{d.currentNumber}}<i class="layui-icon " style="position: absolute;right: 8px;font-weight: bold;font-size: 14px" >{{d.saleUnit}}</i>
+        </script>
+        <!--治疗单单位-->
+        <script type="text/html" id="proUnit">
+            {{d.number}}<i class="layui-icon " style="position: absolute;right: 8px;font-weight: bold;font-size: 14px" >次</i>
+        </script>
+
+
+
+
+    </div>
+</div>
+<script src="../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
+<script>
+
+    layui.use(['form', 'table'], function () {
+        var $ = layui.jquery,
+            form = layui.form,
+            wPreTable = layui.table;
+            cPreTable = layui.table;
+            projectTable = layui.table;
+            wBatchTable=layui.table;
+
+            var wPBatchData={};
+            var cPBatchData={};
+            var projectBatch=[];
+
+            var sumWP=0;
+            var sumCP=0;
+            var sumPro=0;
+            var total=0;
+
+
+
+        // 加载西药数据表格
+        wPreTable.render({
+            elem: '#wPreTableId', // 绑定的元素
+            id:'wPreTableId',
+            limit:'100',
+            //height:'full-200',
+            url: '/showWaitWPDetail', // 表格的数据接口，展示表格都会经过这个接口
+            cols:
+                [
+                    [
+                        {field:'id',hide:true},
+                        {field: 'medicinesName',minWith:150,  title: '药品名',unresize:true},
+                        {field: 'dosageForm',minWith:150,  title: '剂型',unresize:true},
+                        {field: 'number',minWith:80,  title: '总量',unresize:true,templet:'#numberTem'},
+                        {title: '批次选择', minWidth: 50, templet: '#wPrescribeTableBar', fixed: "right", align: "center",unresize:true}
+
+                    ]
+                ],
+            data:[
+
+            ],
+            where:{
+                medicalRecordId:$('#medicalRecordIdId').val()
+            },
+            done:function () {
+                var tableBak = layui.table.cache['wPreTableId'];// 存储数据表格数据
+                //console.log(tableBak);
+                for (var i = 0; i < tableBak.length; i++) { // 遍历数据表格数据
+                    sumWP=sumWP+(tableBak[i]['price']*tableBak[i]['number']);
+                }
+                total=total+sumWP;
+                $('#wpsum').text(sumWP+"￥");
+                $('#totalsum').text(total+"￥");
+
+            }
+
+        });
+
+        // 加载中药数据表格
+        cPreTable.render({
+            elem: '#cPreTableId', // 绑定的元素
+            id:'cPreTableId',
+            limit:'100',
+            //height:'full-200',
+            url: '/showWaitCPDetail', // 表格的数据接口，展示表格都会经过这个接口
+            cols:
+                [
+                    [
+                        {field:'id',hide:true},
+                        {field: 'medicinesName', minWith:150, title: '药品名',unresize:true},
+                        {field: 'dosageForm',minWith:150,  title: '剂型',unresize:true},
+                        {field: 'singleDose',minWith:150,  title: '单次剂量',unresize:true,templet:'#singleDoseTem'},
+                        {field: 'duration',minWith:150,  title: '剂数',unresize:true,templet:'#durationTem'},
+                       // {field: 'price', minWith:80,title: '单价',unresize:true,templet:'#priceTem'},
+                        {field: 'number',minWith:80, title: '总量',unresize:true,templet:'#numberTem'},
+                        {title: '批次选择', minWidth: 50, templet: '#cPrescribeTableBar', fixed: "right", align: "center",unresize:true}
+                    ]
+                ],
+            data:[
+
+            ],
+            where:{
+                medicalRecordId:$('#medicalRecordIdId').val()
+            },
+            done:function () {
+                var tableBak = layui.table.cache['cPreTableId'];// 存储数据表格数据
+                //console.log(tableBak);
+                for (var i = 0; i < tableBak.length; i++) { // 遍历数据表格数据
+                    sumCP=sumCP+(tableBak[i]['price']*tableBak[i]['number']);
+                }
+                total=total+sumCP;
+                $('#cpsum').text(sumCP+"￥");
+                $('#totalsum').text(total+"￥");
+            }
+        });
+
+        // 加载治疗单数据表格
+        projectTable.render({
+            elem: '#projectTableId', // 绑定的元素
+            id:'projectTableId',
+            limit:'100',
+            //height:'full-200',
+            url: '/showWaitProDetail', // 表格的数据接口，展示表格都会经过这个接口
+            cols:
+                [
+                    [
+                        {field:'id',hide:true},
+                        {field: 'projectName',minWith:150, title: '治疗项',unresize:true},
+                        //{field: 'price',minWith:80, title: '单价',unresize:true,templet:'#priceTem'},
+                        {field: 'number',minWith:80, title: '总量',unresize:true,templet:'#proUnit'},
+                        //{field: 'sumPrice',unresize:true,minWith:80,title: '总价',templet:'#sumTem',unresize:true}
+                    ]
+                ],
+            data:[
+
+            ],
+            where:{
+                medicalRecordId:$('#medicalRecordIdId').val()
+            },
+            done:function () {
+                var tableBak = layui.table.cache['projectTableId'];// 存储数据表格数据
+                //console.log(tableBak);
+                for (var i = 0; i < tableBak.length; i++) { // 遍历数据表格数据
+                    sumPro=sumPro+(tableBak[i]['price']*tableBak[i]['number']);
+                }
+                total=total+sumPro;
+                $('#prosum').text(sumPro+"￥");
+                $('#totalsum').text(total+"￥");
+            }
+
+
+        });
+
+
+
+        // 封装函数，时间戳格式化函数(出生日期)
+        function timestampToTime(timestamp) {
+            //时间戳为10位需*1000，时间戳为13位的话不需乘1000
+            var date = new Date(timestamp);
+            Y = date.getFullYear() + '-';
+            M = (date.getMonth()+1 < 10 ? '0'+(date.getMonth()+1) : date.getMonth()+1) + '-';
+            D = date.getDate() + ' ';
+            h = date.getHours() + ':';
+            m = date.getMinutes() + ':';
+            s = date.getSeconds();
+            return Y+M+D;
+        }
+
+        // 格式化时间戳就诊日期
+        function timestampToTimeConsltation(timestamp) {
+            //时间戳为10位需*1000，时间戳为13位的话不需乘1000
+            var date = new Date(timestamp);
+            Y = date.getFullYear() + '-';
+            M = (date.getMonth()+1 < 10 ? '0'+(date.getMonth()+1) : date.getMonth()+1) + '-';
+            D = date.getDate() + ' ';
+            h = date.getHours() + ':';
+            m = date.getMinutes() + ':';
+            s = date.getSeconds();
+            return Y+M+D+h+m+s;
+        }
+
+        // 监听发药按钮
+        $(".data-add-btn").on("click", function () {
+            // // 获取西药值
+
+             //console.log(wPBatchData);
+            //
+            // // 获取中药值
+
+             //console.log(cPBatchData);
+            //
+            // // 获取治疗处方值
+            projectBatch=[];
+            var oldPro = layui.table.cache['projectTableId'];
+            // 制作治疗单发药详情
+            //console.log(oldPro);
+            for (var i=0;i<oldPro.length;i++){
+                projectBatch.push({
+                    "projectId":oldPro[i]["id"],
+                    "projectName":oldPro[i]["projectName"],
+                    "sendNumber":oldPro[i]["number"]
+                });
+            }
+            //console.log(oldPro);
+
+            //projectBatch
+            var medicalRecordId=$('#medicalRecordIdId').val();
+            var detail={
+                "wPBatchData":wPBatchData,
+                "cPBatchData":cPBatchData,
+                "projectBatch":projectBatch,
+                "medicalRecordId":medicalRecordId};
+            //console.log(projectBatch);
+
+            //console.log(detail);
+            //console.log(medicalRecordId);
+
+            $.ajax({
+                url:'/sendMedicalClick',
+                dataType:"json",
+                contentType:"application/json;charset=UTF-8",
+                data:JSON.stringify(detail),
+                type:'post',
+                success:function (data) {
+                    // // 关闭窗口
+                    // //var trans=JSON.parse(data); // 把jsong转换为数组
+                    //
+                    // //console.log(trans);
+                    if(data['msg']=='success'){
+                        // 关闭弹出层
+                        var iframeIndex = parent.layer.getFrameIndex(window.name);
+                        parent.layer.close(iframeIndex);
+                        parent.layer.msg("发药成功！",{icon: 6,time:1000});
+                    }else{
+                        var iframeIndex = parent.layer.getFrameIndex(window.name);
+                        parent.layer.close(iframeIndex);
+                        parent.layer.msg('发药失败！', {icon: 5,time: 1000});
+                    }
+
+                }
+            });
+
+        });
+
+        // 监听西药批次按钮
+        wPreTable.on('tool(wPreTableFilter)',function(obj){
+
+            // 取得行数据
+            var data=obj.data;
+
+            // 监听最后一行的数据操作，数据按钮,是否点击发药按钮
+            if (obj.event === 'batchDetail') {
+                //console.log(data['medicinesName']);
+                // console.log(obj['data']['patientInfo']['patientId']);
+                // console.log(obj['data']['medicalRecordId']);
+                layer.open({
+                    title:'西药批次',
+                    type:1,
+                    shade:0.2,
+                    maxmin:false,
+                    closeBtn: 0, //不显示关闭按钮
+                    shadeClose:true,
+                    area:['60%','60%'],
+                    content:'<div style="margin: 10px 10px 10px 10px" id="wBatchTableDivId">\n' +
+                        '<table class="layui-hide" id="wBatchTableId" lay-filter="wBatchTableFilter"></table>\n' +
+                        '</div>',
+                    success: function(layero, index){  // 父页向子页面传值
+
+
+                        // 判断是否有历史数据 有则用缓存的，没有则去数据库中取
+                        if(!wPBatchData[data['medicinesName']]){
+                            wBatchTable.render({
+                                elem: '#wBatchTableId', // 绑定的元素
+                                id: 'wBatchTableId',
+                                limit: '100',
+                                url: '/showWPBatchList', // 表格的数据接口，展示表格都会经过这个接口
+                                cols:
+                                    [
+                                        [
+                                            {field: 'medicinesId', hide: true},
+                                            {field: 'saleUnit', hide: true},
+                                            {field: 'batchNumber', minWith: 150, title: '药品批次', unresize: true},
+                                            {field: 'expiryDate', minWith: 150, title: '过期日期', unresize: true,templet:function (d) {
+                                                    return timestampToTime(d['expiryDate'])
+                                                }},
+                                            {field: 'sendNumber', minWith: 150, title: '发药数', unresize: true,edit: 'text'},
+                                            {field: 'currentNumber', minWith: 80, title: '现库存', unresize: true,templet:'#currentNumberTem'}
+                                        ]
+                                    ],
+                                where: {
+                                    medicinesName: data['medicinesName']
+                                }
+                            });
+                        }else {
+                            wBatchTable.render({
+                                elem: '#wBatchTableId', // 绑定的元素
+                                id: 'wBatchTableId',
+                                limit: '100',
+                                //url: '/showWPBatchList', // 表格的数据接口，展示表格都会经过这个接口
+                                cols:
+                                    [
+                                        [
+                                            {field: 'medicinesId', hide: true},
+                                            {field: 'saleUnit', hide: true},
+                                            {field: 'batchNumber', minWith: 150, title: '药品批次', unresize: true},
+                                            {field: 'expiryDate', minWith: 150, title: '过期日期', unresize: true,templet:function (d) {
+                                                    return timestampToTime(d['expiryDate'])
+                                                }},
+                                            {field: 'sendNumber', minWith: 150, title: '发药数', unresize: true,edit: 'text'},
+                                            {field: 'currentNumber', minWith: 80, title: '现库存', unresize: true,templet:'#currentNumberTem'}
+                                        ]
+                                    ],
+                                data:wPBatchData[data['medicinesName']]
+                            });
+                        }
+                    },
+                    end:function () {
+                        // 获取填写的数据信息
+                        var tableBak = layui.table.cache['wBatchTableId'];// 存储数据表格数据
+                        //console.log(tableBak);
+                        var r=/^\+?[1-9][0-9]*$/; // 是否是正实数
+                        var isRight=1;
+                        var newData=[];
+                        wPBatchData[data['medicinesName']]=[];
+                        var total=0;
+                        for (var i = 0; i < tableBak.length; i++) { // 遍历数据表格数据
+                            if(!r.test(tableBak[i]['sendNumber']) && tableBak[i]['sendNumber']){
+                                isRight=0;
+                            }else {
+                                if(r.test(tableBak[i]['sendNumber']) && tableBak[i]['sendNumber']){
+                                    total=total+parseInt(tableBak[i]['sendNumber']);
+                                }
+                            }
+                            newData.push({
+                                "wPrescribeId":data['id'],// 西药处方单id
+                                "medicinesId":tableBak[i]['medicinesId'],
+                                "medicinesBarcode":tableBak[i]['medicinesBarcode'],
+                                "medicinesName":tableBak[i]['medicinesName'],
+                                "batchNumber":tableBak[i]['batchNumber'],
+                                "productionDate":tableBak[i]['productionDate'],
+                                "expiryDate":tableBak[i]['expiryDate'],
+                                "sendNumber":tableBak[i]['sendNumber'],
+                                "currentNumber":tableBak[i]['currentNumber'],
+                                "saleUnit":tableBak[i]['saleUnit'],
+                                "isSend":"",
+                                "isReturn":"",
+                                "wbStatus":""
+                            });
+                        }
+                        wPBatchData[data['medicinesName']]=newData;
+
+                        //console.log(total);
+                        if(isRight==0 || total>parseInt(data['number']) || total<parseInt(data['number'])){
+                            layer.msg('输入有误', {icon: 5,time: 1000});
+                        }
+
+                    }
+                });
+            }
+        });
+
+        // 监听中药批次按钮
+        cPreTable.on('tool(cPreTableFilter)',function(obj){
+
+            // 取得行数据
+            var data=obj.data;
+
+            // 监听最后一行的数据操作，数据按钮,是否点击挂号按钮
+            if (obj.event === 'batchDetail') {
+                //console.log(data['medicinesName']);
+                // console.log(obj['data']['patientInfo']['patientId']);
+                // console.log(obj['data']['medicalRecordId']);
+                layer.open({
+                    title:'中药批次',
+                    type:1,
+                    shade:0.2,
+                    maxmin:false,
+                    closeBtn: 0, //不显示关闭按钮
+                    shadeClose:true,
+                    area:['60%','60%'],
+                    content:'<div style="margin: 10px 10px 10px 10px" id="cBatchTableDivId">\n' +
+                        '<table class="layui-hide" id="cBatchTableId" lay-filter="cBatchTableFilter"></table>\n' +
+                        '</div>',
+                    success: function(layero, index){  // 父页向子页面传值
+
+
+                        // 判断是否有历史数据 有则用缓存的，没有则去数据库中取
+                        if(!cPBatchData[data['medicinesName']]){
+                            wBatchTable.render({
+                                elem: '#cBatchTableId', // 绑定的元素
+                                id: 'cBatchTableId',
+                                limit: '100',
+                                url: '/showWPBatchList', // 表格的数据接口，展示表格都会经过这个接口
+                                cols:
+                                    [
+                                        [
+                                            {field: 'medicines_id', hide: true},
+                                            {field: 'saleUnit', hide: true},
+                                            {field: 'batchNumber', minWith: 150, title: '药品批次', unresize: true},
+                                            {field: 'expiryDate', minWith: 150, title: '过期日期', unresize: true,templet:function (d) {
+                                                    return timestampToTime(d['expiryDate'])
+                                                }},
+                                            {field: 'sourceArea', minWith: 150, title: '产地', unresize: true},
+                                            {field: 'sendNumber', minWith: 150, title: '发药数', unresize: true,edit: 'text'},
+                                            {field: 'currentNumber', minWith: 80, title: '现库存', unresize: true,templet:'#currentNumberTem'}
+                                        ]
+                                    ],
+                                where: {
+                                    medicinesName: data['medicinesName']
+                                }
+                            });
+                        }else {
+                            wBatchTable.render({
+                                elem: '#cBatchTableId', // 绑定的元素
+                                id: 'cBatchTableId',
+                                limit: '100',
+                                //url: '/showWPBatchList', // 表格的数据接口，展示表格都会经过这个接口
+                                cols:
+                                    [
+                                        [
+                                            {field: 'medicines_id', hide: true},
+                                            {field: 'saleUnit', hide: true},
+                                            {field: 'batchNumber', minWith: 150, title: '药品批次', unresize: true},
+                                            {field: 'expiryDate', minWith: 150, title: '过期日期', unresize: true,templet:function (d) {
+                                                    return timestampToTime(d['expiryDate'])
+                                                }},
+                                            {field: 'sourceArea', minWith: 150, title: '产地', unresize: true},
+                                            {field: 'sendNumber', minWith: 150, title: '发药数', unresize: true,edit: 'text'},
+                                            {field: 'currentNumber', minWith: 80, title: '现库存', unresize: true,templet:'#currentNumberTem'}
+                                        ]
+                                    ],
+                                data:cPBatchData[data['medicinesName']]
+                            });
+                        }
+                    },
+                    end:function () {
+                        // 获取填写的数据信息
+                        var tableBak = layui.table.cache['cBatchTableId'];// 存储数据表格数据
+                        //console.log(tableBak);
+                        var r=/^\+?[1-9][0-9]*$/; // 是否是正实数
+                        var isRight=1;
+                        var newData=[];
+                        cPBatchData[data['medicinesName']]=[];
+                        var total=0;
+                        for (var i = 0; i < tableBak.length; i++) { // 遍历数据表格数据
+                            if(!r.test(tableBak[i]['sendNumber']) && tableBak[i]['sendNumber']){
+                                isRight=0;
+                            }else {
+                                if(r.test(tableBak[i]['sendNumber']) && tableBak[i]['sendNumber']){
+                                    total=total+parseInt(tableBak[i]['sendNumber']);
+                                }
+                            }
+                            newData.push({
+                                "cPrescribeId":data['id'],// 中药处方单id
+                                "medicinesId":tableBak[i]['medicinesId'],
+                                "medicinesName":tableBak[i]['medicinesName'],
+                                "batchNumber":tableBak[i]['batchNumber'],
+                                "productionDate":tableBak[i]['productionDate'],
+                                "expiryDate":tableBak[i]['expiryDate'],
+                                "sendNumber":tableBak[i]['sendNumber'],
+                                "sourceArea":tableBak[i]['sourceArea'],
+                                "currentNumber":tableBak[i]['currentNumber'],
+                                "saleUnit":tableBak[i]['saleUnit'],
+                                "isSend":"",
+                                "isReturn":"",
+                                "wbStatus":""
+                            });
+
+                        }
+                        cPBatchData[data['medicinesName']]=newData;
+
+                        //console.log(total);
+                        if(isRight==0 || total>parseInt(data['number']) || total<parseInt(data['number'])){
+                            layer.msg('输入有误', {icon: 5,time: 1000});
+                        }
+
+                    }
+                });
+            }
+        });
+
+    });
+
+</script>
+
+
+
+</body>
+</html>

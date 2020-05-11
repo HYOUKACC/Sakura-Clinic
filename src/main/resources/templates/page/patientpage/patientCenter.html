@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>挂号登记</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../lib/layui-v2.5.5/css/layui.css" media="all">
+    <link rel="stylesheet" href="../css/public.css" media="all">
+
+</head>
+<body>
+<div class="layuimini-container">
+    <div class="layuimini-main">
+
+        <!--搜索框-->
+        <fieldset class="layui-elem-field layuimini-search">
+            <legend>检索患者</legend>
+            <div style="margin: 10px 10px 10px 10px">
+                <form class="layui-form layui-form-pane" action="" id="formSearchId">
+                    <div class="layui-form-item">
+                        <div class="layui-inline">
+                            <label class="layui-form-label" >就诊卡</label>
+                            <div class="layui-input-inline">
+                                <input  type="text" name="patientId" autocomplete="off" class="layui-input" id="patientIdId">
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <label class="layui-form-label">姓名</label>
+                            <div class="layui-input-inline">
+                                <input type="text" name="patientName" autocomplete="off" class="layui-input" id="patientNameId">
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <label class="layui-form-label">手机号</label>
+                            <div class="layui-input-inline">
+                                <input type="text" name="phone" autocomplete="off" class="layui-input" id="phoneId">
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <input type="checkbox" name="ScanC" id="scanCodeId" title="扫描枪" lay-filter="scanCodeFilter">
+                        </div>
+                        <div class="layui-inline">
+                            <a class="layui-btn" lay-submit="" lay-filter="data-search-btn" style="background-color: #3CB371" id="btnSearchId">搜索</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </fieldset>
+        <table class="layui-hide" id="currentTableId" lay-filter="currentTableFilter"></table>
+        <br>
+        <br>
+        <div class="layui-row layui-col-space12">
+            <div class="layui-btn-group layui-col-md6 layui-col-md-offset3">
+                <button class="layui-btn data-add-btn layui-col-md12 layui-btn-lg" style="background-color: #3CB371;height: 60px">患者登记</button>
+            </div>
+        </div>
+        <br>
+        <br>
+        <!-- 监控工具栏-->
+        <script type="text/html" id="currentTableBar">
+                <a class="layui-btn layui-btn-xs data-count-edit" name="btnregister" lay-event="register" style="background-color: #3CB371">挂号</a>
+        </script>
+    </div>
+</div>
+<script src="../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
+<script>
+
+    layui.use(['form', 'table'], function () {
+        var $ = layui.jquery,
+            form = layui.form,
+            patientCenter = layui.table;
+
+
+        // 监听input的回车操作
+        $('.layui-input').keydown(function(event){
+            if(event.keyCode==13){
+                document.getElementById("btnSearchId").click(); // 点击搜索按钮
+            }
+        });
+
+        // 监听扫描枪选项是否勾选，勾选则聚焦到条码框
+        form.on('checkbox(scanCodeFilter)',function(data){
+            if(data.elem.checked==true){
+                $("#patientIdId").focus(); // 焦点选在条码框
+                $('#patientNameId').attr("disabled",true);// 锁定姓名搜索框
+                $('#patientNameId').css("backgroundColor","#F5F5F5");
+                $('#phoneId').attr("disabled",true);// 锁定电话搜索框
+                $('#phoneId').css("backgroundColor","#F5F5F5");
+                $("#patientNameId").val(""); // 姓名清空
+                $("#phoneId").val(""); // 电话清空
+            }else {
+
+                $('#patientNameId').attr("disabled",false);// 移除
+                $('#patientNameId').css("backgroundColor","#FFFFFF");
+                $('#phoneId').attr("disabled",false);
+                $('#phoneId').css("backgroundColor","#FFFFFF");
+            }
+        });
+
+        // 设置搜索按钮点击时的回调函数
+        // input回车事件，扫描枪回车事件，实质就是点击搜索按钮；
+        // 点击搜索按钮后，判断扫描枪选项是否勾起
+        // 如果勾起，那么查询完结果后，input框要清空数据；没有，则可以继续手动输入
+        $("#btnSearchId").click(function () {
+
+            // 监听搜索按钮操作，加载数据
+            form.on('submit(data-search-btn)', function (data) {
+
+                var obj = data.field; // 遍历表单参数，查看扫描框元素是否在数据中
+                $.each(obj, function(key, val){
+                    if(key=="ScanC" && val== "on"){
+                        $("#patientIdId").focus(); // 焦点选在条码框
+                        $("#patientIdId").val(""); // 条码框内容清空
+                        $("#nameId").val(""); // 姓名清空
+                        $("#phoneId").val(""); // 电话清空
+                        data.field["name"]=""; // 姓名的值清空
+                        data.field["phone"]=""; // 电话的值清空
+                    }
+                });
+
+                //console.log(data.field);
+                // 监听搜索表单的sumbit方法，传入相应的值
+                // data.field方法，把对象转换成json格式
+                // JSON.stringify(data.field)方法，把json转换成string类型
+                // data.field["patientId"]方法，根据json的键值获取value值
+                //执行搜索后的，加载数据表格
+                // 加载患者的数据表格
+                patientCenter.render({
+                    elem: '#currentTableId', // 绑定的元素
+                    url: '/showPatientTable', // 表格的数据接口，展示表格都会经过这个接口
+                    //even: true, // 开启隔行背景
+                    limit: 5, // 定义每页显示几条数据
+                    limits: [5, 10, 15], // 定义每页条数的选项
+                    cols:
+                        [
+                            [
+                                {field: 'patientId', minWidth: 100, title: '就诊卡',event:'detial',style:'cursor: pointer;'},
+                                {field: 'patientName', minWidth: 80, title: '姓名',event:'detial',style:'cursor: pointer;'},
+                                {field: 'sex', title: '性别', minWidth: 50,event:'detial',style:'cursor: pointer;'},
+                                {field: 'birthday', minWidth: 80, title: '出生日期',event:'detial',style:'cursor: pointer;',templet:function (d) {
+                                   // console.log(d);
+                                    return timestampToTime(d['birthday'])
+                                    }},
+                                {field: 'phone', minWidth: 50, title: '电话',templet:'#batchNumber',event:'detial',style:'cursor: pointer;'},
+                                {title: '操作', minWidth: 50, templet: '#currentTableBar', fixed: "right", align: "center"}
+                            ]
+                        ],
+                    page: { //支持传入laypage组件的所有参数（某些参数除外，如：jump/elem） - 详见文档
+                        layout: ['prev', 'page', 'next', 'skip', 'limit', 'count'], //自定义分页布局
+                        curr: 1, // 设定初始在第几页
+                        groups: 3, //只显示几个连续页码
+                        first: false, //显示首页
+                        last: false //显示尾页
+                    },
+                    where:{
+                        // 为传入后台的键值对赋值
+                        // 当键值与后台pojo类对应的属性名相同时，SpringMVC会自动赋值，后台用对应的对象来接收即可
+                        patientId: data.field["patientId"],
+                        patientName:data.field["patientName"],
+                        phone:data.field["phone"]
+                    }
+                });
+                return false;
+            });
+
+        });
+
+        // 分装函数，制作患者ID或病历ID
+        function makeId(){
+            // 制作患者ID
+            var date=new Date();// 得到当前时间
+            var Y=date.getFullYear()-2000; // 年
+            var M=(date.getMonth()+1 < 10 ? '0'+(date.getMonth()+1) : date.getMonth()+1); // 月
+            var D = (date.getDate() < 10 ? '0'+date.getDate() : date.getDate()); // 日
+            var h = (date.getHours() < 10 ? '0'+date.getHours() : date.getHours()); // 时
+            var m = (date.getMinutes() < 10 ? '0'+date.getMinutes() : date.getMinutes()); // 分
+            var s = (date.getSeconds() < 10 ? '0'+date.getSeconds() : date.getSeconds()); // 秒
+            var ms=date.getMilliseconds(); // 毫秒
+            if(ms<10){
+                ms='00'+ms;
+            }else if(ms<100){
+                ms='0'+ms;
+            }
+            var id=Y+M+D+h+m+s+ms;
+            return id;
+        }
+
+
+        // 监听患者登记按钮
+        $(".data-add-btn").on("click", function () {
+
+            var id=makeId();
+            var addpatient=layer.open({
+               title:'患者登记',
+               type:2,
+               shade:0.2,
+               maxmin:true,
+                shadeClose:true,
+                area:['100%','100%'],
+                content:['/addpatient'],
+                success:function(layero, index){ // 父页为子页传值，设置患者ID
+                    var body = layer.getChildFrame('body', index);
+                    var iframeWin = window[layero.find('iframe')[0]['name']]; //得到iframe页的窗口对象，执行iframe页的方法：iframeWin.method();
+                    body.find('#patientIdId').val(id); // 为子元素-患者ID赋值
+                },
+                end:function (){
+
+                }
+            });
+
+            return false;
+        });
+
+
+
+
+        // 封装函数，时间戳格式化函数
+        function timestampToTime(timestamp) {
+            //时间戳为10位需*1000，时间戳为13位的话不需乘1000
+            var date = new Date(timestamp);
+            Y = date.getFullYear() + '-';
+            M = (date.getMonth()+1 < 10 ? '0'+(date.getMonth()+1) : date.getMonth()+1) + '-';
+            D = date.getDate() + ' ';
+            h = date.getHours() + ':';
+            m = date.getMinutes() + ':';
+            s = date.getSeconds();
+            return Y+M+D;
+        }
+
+        // 监听单元格内的事件，弹出详细信息
+        patientCenter.on('tool(currentTableFilter)',function(obj){
+
+            // 取得行数据
+            var data=obj.data;
+
+            // 监听最后一行的数据操作，数据按钮,是否点击挂号按钮
+            if (obj.event === 'register') {
+
+                // 点击挂号后，这个数据是可信的，所以可以直接传递到挂号页面
+                // 开启挂号页面，传入当前行的参数
+                var date=new Date();// 得到当前时间
+                var Y=date.getFullYear(); // 年
+                var M=(date.getMonth()+1 < 10 ? '0'+(date.getMonth()+1) : date.getMonth()+1); // 月
+                var D = (date.getDate() < 10 ? '0'+date.getDate() : date.getDate()); // 日
+                var h = (date.getHours() < 10 ? '0'+date.getHours() : date.getHours()); // 时
+                var m = (date.getMinutes() < 10 ? '0'+date.getMinutes() : date.getMinutes()); // 分
+                var s = (date.getSeconds() < 10 ? '0'+date.getSeconds() : date.getSeconds()); // 秒
+                var registerTime=Y+"-"+M+"-"+D+" "+h+":"+m+":"+s; // 挂号时间
+                var registerId=makeId(); // 制作病历号
+
+                layer.open({
+                    title:'患者挂号',
+                    type:2,
+                    shade:0.2,
+                    maxmin:true,
+                    shadeClose:true,
+                    area:['100%','100%'],
+                    content:['/patientregister'],
+                    success: function(layero, index){  // 父页向子页面传值
+                        var body = layer.getChildFrame('body', index);
+                        var iframeWin = window[layero.find('iframe')[0]['name']]; //得到iframe页的窗口对象，执行iframe页的方法：iframeWin.method();
+                        body.find('#registerDateId').val(registerTime); // 为子元素挂号赋值
+                        body.find('#medicalRecordIdId').val(registerId); // 为子元素病历号赋值
+                        $.each(data,function (key,val) { // 遍历数据，进行赋值
+                            body.find('#'+key+'Id').val(val); // 为子元素赋值
+                        });
+                    },
+                    end:function(){
+                        var curr=$(".layui-laypage-em").next().html(); //当前页码值
+                        patientCenter.reload('currentTableId', { // 表格重载
+                            page: {
+                                curr: curr // 从当前页开始
+                            }
+                        });
+                    }
+                });
+
+            }
+
+            // 如果是点击的单元格是detial事件，弹框
+            if(obj.event === 'detial'){
+                var data = obj.data;
+
+                // // 转换日期
+                var birthday= timestampToTime(data['birthday']);
+
+                // 拼接弹出层数据
+                var text='<div style=\"padding: 50px; line-height: 22px; background-color:  #2E8B57; color: #fff; font-weight: bold;\">';
+                text=text+'姓名：'+data["patientName"]+'<br>'+
+                    '姓名简码：'+data['nameCode']+'<br>'+
+                    '性别：'+data['sex']+'<br>'+
+                    '出生日期：'+birthday+'<br>'+
+                    '住址：'+data['address']+'<br>'+
+                    '电话：'+data['phone']+'<br>'+
+                    '过敏史：'+data['allergies']+'<br>'+
+                    '慢性病史：'+data['chronic']+'<br>'+
+                    '家族病史：'+data['familyMedicalHistory']+'<br>'+
+                    '状态：'+data['status']+'<br>'
+                ;
+                text=text+'</div>';
+
+                layer.open({
+                    type: 1,
+                    skin: 'layui-layer-demo', //样式类名
+                    title:'患者详情',
+                    closeBtn: 0, //不显示关闭按钮
+                    anim: 2,
+                    shadeClose: true, //开启遮罩关闭
+                    content:text
+                });
+
+            }
+        });
+
+
+    });
+
+</script>
+
+
+
+</body>
+</html>

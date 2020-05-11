@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>患者登记</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../../lib/layui-v2.5.5/css/layui.css" media="all">
+    <link rel="stylesheet" href="../../css/public.css" media="all">
+    <link rel="stylesheet" href="../../js/lay-module/step-lay/step.css" media="all">
+    <style>
+        body {
+            background-color: #ffffff;
+        }
+
+
+    </style>
+</head>
+<body>
+
+<div class="layuimini-container">
+    <div class="layuimini-main">
+        <div class="layui-form layui-form-pane" style="text-align: center">
+
+                <div class="layui-row">
+                    <!--左半边，占7列-->
+                    <div class="layui-col-md7">
+                        <div class="layui-row">
+                            <fieldset class="layui-elem-field layuimini-search">
+                                <legend style="text-align:left">基础信息</legend>
+                                <div style="margin: 10px 10px 10px 10px">
+                                    <div class="layui-form-item">
+                                        <!--第一行-->
+                                        <div class="layui-row">
+                                            <div class="layui-inline" style="margin: 10px 10px 10px 10px">
+                                                <label class="layui-form-label">就诊卡号</label>
+                                                <div class="layui-input-inline">
+                                                    <input  disabled type="text" name="patientId" autocomplete="off" class="layui-input" id="patientIdId" lay-verify="required">
+                                                </div>
+                                            </div>
+
+                                            <div class="layui-inline" style="margin: 10px 10px 10px 10px">
+                                                <label class="layui-form-label">姓名</label>
+                                                <div class="layui-input-inline">
+                                                    <input type="text" name="patientName" autocomplete="off" class="layui-input" id="patientNameId" lay-verify="required">
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                        <!--第二行-->
+                                        <div class="layui-row">
+
+                                            <div class="layui-inline" style="margin: 10px 10px 10px 10px">
+                                                <label class="layui-form-label">姓名简码</label>
+                                                <div class="layui-input-inline">
+                                                    <input type="text" name="nameCode" autocomplete="off" class="layui-input" id="nameCodeId" lay-verify="required">
+                                                </div>
+                                            </div>
+
+                                            <div class="layui-inline"style="margin: 10px 10px 10px 10px">
+                                                <label class="layui-form-label">性别</label>
+                                                <div class="layui-input-inline">
+                                                    <select name="sex"  id="sexId" lay-verify="required">
+                                                        <option value=""></option>
+                                                        <option value="男">男</option>
+                                                        <option value="女">女</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <!--第三行-->
+                                        <div class="layui-row">
+                                            <div class="layui-inline"style="margin: 10px 10px 10px 10px">
+                                                <label class="layui-form-label">出生日期</label>
+                                                <div class="layui-input-inline" >
+                                                    <input type="text" style="cursor: pointer;" name="birthday" placeholder="YYYY-MM-DD" id="birthdayId" autocomplete="off" class="layui-input" lay-verify="required">
+                                                </div>
+                                            </div>
+
+                                            <div class="layui-inline"style="margin: 10px 10px 10px 10px" >
+                                                <label class="layui-form-label">电话号码</label>
+                                                <div class="layui-input-inline" >
+                                                    <input type="text"  name="phone"  id="phoneId" autocomplete="off" class="layui-input" lay-verify="required">
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </fieldset>
+                        </div>
+                        <br>
+                        <div class="layui-row">
+                            <fieldset class="layui-elem-field layuimini-search">
+                                <legend style="text-align:left">居住信息</legend>
+                                <div style="margin: 10px 10px 10px 10px">
+                                    <div class="layui-form-item">
+
+                                        <div class="layui-row">
+                                            <div  id="area-picker">
+                                                <div class="layui-inline" style="margin: 10px 10px 10px 10px">
+                                                    <label class="layui-form-label">省份</label>
+                                                    <div class="layui-input-inline" >
+                                                        <select name="province" id="provinceId" class="province-selector" data-value="广东省" lay-filter="province-1" lay-verify="required">
+                                                            <option value="">请选择省</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+
+                                                <div class="layui-inline" style="margin: 10px 10px 10px 10px">
+                                                    <label class="layui-form-label">城市</label>
+                                                    <div class="layui-input-inline" >
+                                                        <select name="city" id="cityId" class="city-selector" data-value="深圳市" lay-filter="city-1" lay-verify="required">
+                                                            <option value="">请选择市</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+
+                                                <div class="layui-inline" style="margin: 10px 10px 10px 10px">
+                                                    <label class="layui-form-label">地区</label>
+                                                    <div class="layui-input-inline" >
+                                                        <select name="county" id="countyId" class="county-selector" data-value="南山区" lay-filter="county-1" lay-verify="required">
+                                                            <option value="">请选择区</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+
+                                                <div class="layui-inline" style="margin: 10px 10px 10px 10px">
+                                                    <label class="layui-form-label">详细地址</label>
+                                                    <div class="layui-input-inline">
+                                                        <input type="text" name="addD" autocomplete="off" class="layui-input" id="addDId" lay-verify="required">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                                <br>
+                                <div class="layui-form-item">
+                                    <div class="layui-row layui-col-space12" id="submitDiv">
+                                        <div class="layui-btn-group layui-col-md6 layui-col-md-offset3">
+                                            <button id="submitBtnId" lay-submit="" lay-filter="saveBtn" class="layui-btn data-add-btn layui-col-md12 layui-btn-lg" style="background-color: #3CB371;height: 66px">患者登记</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </fieldset>
+
+
+                        </div>
+
+                    </div>
+                    <!--右半边，占5列-->
+                    <div class="layui-col-md5">
+                        <fieldset class="layui-elem-field layuimini-search">
+                            <legend style="text-align:left">拓展信息</legend>
+                            <div style="margin: 10px 10px 10px 10px">
+                                <div class="layui-form-item" >
+                                    <div class="layui-form-item layui-form-text" style="margin: 20px 10px 10px 10px">
+                                        <label class="layui-form-label">过敏史</label>
+                                        <div class="layui-input-block">
+                                            <textarea name="allergies" id="allergiesId" placeholder="请输入内容" class="layui-textarea" >暂无</textarea>
+                                        </div>
+                                    </div>
+
+                                    <div class="layui-form-item layui-form-text" style="margin: 20px 10px 10px 10px">
+                                        <label class="layui-form-label">慢性史</label>
+                                        <div class="layui-input-block">
+                                            <textarea name="chronic" id="chronicId" placeholder="请输入内容" class="layui-textarea" >暂无</textarea>
+                                        </div>
+                                    </div>
+
+                                    <div class="layui-form-item layui-form-text" style="margin: 20px 10px 10px 10px">
+                                        <label class="layui-form-label">家族病史</label>
+                                        <div class="layui-input-block">
+                                            <textarea name="familyMedicalHistory" id="familyMedicalHistoryId" placeholder="请输入内容" class="layui-textarea" >暂无</textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </fieldset>
+                    </div>
+                </div>
+        </div>
+    </div>
+</div>
+
+<script src="../../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
+<script src="../../js/lay-config.js" charset="utf-8"></script>
+<script>
+    layui.use(['form','laydate','layarea'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            $ = layui.$;
+        var laydate = layui.laydate;
+        var layarea = layui.layarea;
+
+        layarea.render({
+            elem: '#area-picker'
+        });
+
+        function makeId(){
+            // 制作患者ID
+            var date=new Date();// 得到当前时间
+            var Y=date.getFullYear()-2000; // 年
+            var M=(date.getMonth()+1 < 10 ? '0'+(date.getMonth()+1) : date.getMonth()+1); // 月
+            var D = (date.getDate() < 10 ? '0'+date.getDate() : date.getDate()); // 日
+            var h = (date.getHours() < 10 ? '0'+date.getHours() : date.getHours()); // 时
+            var m = (date.getMinutes() < 10 ? '0'+date.getMinutes() : date.getMinutes()); // 分
+            var s = (date.getSeconds() < 10 ? '0'+date.getSeconds() : date.getSeconds()); // 秒
+            var ms=date.getMilliseconds(); // 毫秒
+            if(ms<10){
+                ms='00'+ms;
+            }else if(ms<100){
+                ms='0'+ms;
+            }
+            var id=Y+M+D+h+m+s+ms;
+            return id;
+        }
+
+        //监听提交
+        form.on('submit(saveBtn)', function (data) {
+
+            //console.log(data.field);
+            //alert(data.field);
+            // 向后台发送ajax请求
+            $.post("/savepatient",data.field,function (data) {
+                // 关闭登记窗口
+                var trans=JSON.parse(data); // 把jsong转换为数组
+                var txt="";
+                if(trans['msg']=='success'){
+                    txt="登记成功！";// 正常情况，一般都是入库成功
+                    layer.msg(txt,{icon: 1});
+                }else{
+                    txt="登记失败，请重新尝试！";
+                }
+                // 登记成功，直接进入挂号页面
+                var date=new Date();// 得到当前时间
+                var Y=date.getFullYear(); // 年
+                var M=(date.getMonth()+1 < 10 ? '0'+(date.getMonth()+1) : date.getMonth()+1); // 月
+                var D = (date.getDate() < 10 ? '0'+date.getDate() : date.getDate()); // 日
+                var h = (date.getHours() < 10 ? '0'+date.getHours() : date.getHours()); // 时
+                var m = (date.getMinutes() < 10 ? '0'+date.getMinutes() : date.getMinutes()); // 分
+                var s = (date.getSeconds() < 10 ? '0'+date.getSeconds() : date.getSeconds()); // 秒
+                var registerTime=Y+"-"+M+"-"+D+" "+h+":"+m+":"+s; // 挂号时间
+                var registerId=makeId(); // 制作病历号
+
+                layer.open({
+                    title:'患者挂号',
+                    type:2,
+                    shade:0.2,
+                    maxmin:true,
+                    shadeClose:true,
+                    area:['100%','100%'],
+                    content:['/patientregister'],
+                    success: function(layero, index){  // 父页向子页面传值
+                        var body = layer.getChildFrame('body', index);
+                        var iframeWin = window[layero.find('iframe')[0]['name']]; //得到iframe页的窗口对象，执行iframe页的方法：iframeWin.method();
+                        body.find('#registerDateId').val(registerTime); // 为子元素挂号时间赋值
+                        body.find('#medicalRecordIdId').val(registerId); // 为子元素病历号赋值
+                        body.find('#patientIdId').val($('#patientIdId').val());
+                        body.find('#patientNameId').val($('#patientNameId').val());
+
+                    },
+                    end:function () {
+                        var iframeIndex = parent.layer.getFrameIndex(window.name);
+                        parent.layer.close(iframeIndex);
+                    }
+                });
+
+            });
+
+            return false;
+        });
+
+        // 生产日期选择
+        laydate.render({
+            elem: '#birthdayId',
+            trigger: 'click', // 日期只读
+            theme: '#3CB371', // 主题色
+            showBottom: false,
+            max:0
+        });
+
+
+
+        // 监听姓名输入框的变化，为自动转换姓名简码做准备
+        $('#patientNameId').on("input propertychange",function () {
+
+            var str={"str":$('#patientNameId').val()};
+            // 执行ajax请求
+           $.post("/transToFirst",str,function (data) {
+               var message=JSON.parse(data);// 把json转换为数组
+               $('#nameCodeId').val(message['data']);
+           });
+
+
+        });
+
+
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>窗口收费</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../lib/layui-v2.5.5/css/layui.css" media="all">
+    <link rel="stylesheet" href="../css/public.css" media="all">
+
+</head>
+<body>
+<div class="layuimini-container">
+    <div class="layuimini-main">
+
+        <!--搜索框-->
+        <fieldset class="layui-elem-field layuimini-search">
+            <legend>检索患者</legend>
+            <div style="margin: 10px 10px 10px 10px">
+                <form class="layui-form layui-form-pane" action="" id="formSearchId">
+                    <div class="layui-form-item">
+                        <div class="layui-inline">
+                            <label class="layui-form-label" >就诊卡</label>
+                            <div class="layui-input-inline">
+                                <input  type="text" name="patientId" autocomplete="off" class="layui-input" id="patientIdId">
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <label class="layui-form-label">姓名</label>
+                            <div class="layui-input-inline">
+                                <input type="text" name="patientName" autocomplete="off" class="layui-input" id="patientNameId">
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <label class="layui-form-label">手机号</label>
+                            <div class="layui-input-inline">
+                                <input type="text" name="phone" autocomplete="off" class="layui-input" id="phoneId">
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <input type="checkbox" name="ScanC" id="scanCodeId" title="扫描枪" lay-filter="scanCodeFilter">
+                        </div>
+                        <div class="layui-inline">
+                            <a class="layui-btn" lay-submit="" lay-filter="data-search-btn" style="background-color: #3CB371" id="btnSearchId">搜索</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </fieldset>
+        <br>
+        <br>
+        <fieldset class="layui-elem-field layuimini-search">
+            <legend>待收费</legend>
+            <div style="margin: 10px 10px 10px 10px">
+                <table class="layui-hide" id="currentTableId" lay-filter="currentTableFilter"></table>
+            </div>
+        </fieldset>
+
+        <br>
+        <br>
+        <!-- 监控工具栏-->
+        <script type="text/html" id="currentTableBar">
+                <a class="layui-btn layui-btn-xs data-count-edit" name="btncharge" lay-event="charge" style="background-color: #3CB371">收费</a>
+        </script>
+    </div>
+</div>
+<script src="../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
+<script>
+
+    layui.use(['form', 'table'], function () {
+        var $ = layui.jquery,
+            form = layui.form,
+            chargeCenter = layui.table;
+
+
+        // 监听input的回车操作
+        $('.layui-input').keydown(function(event){
+            if(event.keyCode==13){
+                document.getElementById("btnSearchId").click(); // 点击搜索按钮
+            }
+        });
+
+        // 监听扫描枪选项是否勾选，勾选则聚焦到条码框
+        form.on('checkbox(scanCodeFilter)',function(data){
+            if(data.elem.checked==true){
+                $("#patientIdId").focus(); // 焦点选在条码框
+                $('#patientNameId').attr("disabled",true);// 锁定姓名搜索框
+                $('#patientNameId').css("backgroundColor","#F5F5F5");
+                $('#phoneId').attr("disabled",true);// 锁定电话搜索框
+                $('#phoneId').css("backgroundColor","#F5F5F5");
+                $("#patientNameId").val(""); // 姓名清空
+                $("#phoneId").val(""); // 电话清空
+            }else {
+
+                $('#patientNameId').attr("disabled",false);// 移除
+                $('#patientNameId').css("backgroundColor","#FFFFFF");
+                $('#phoneId').attr("disabled",false);
+                $('#phoneId').css("backgroundColor","#FFFFFF");
+            }
+        });
+
+        // 设置搜索按钮点击时的回调函数
+        // input回车事件，扫描枪回车事件，实质就是点击搜索按钮；
+        // 点击搜索按钮后，判断扫描枪选项是否勾起
+        // 如果勾起，那么查询完结果后，input框要清空数据；没有，则可以继续手动输入
+        $("#btnSearchId").click(function () {
+
+            // 监听搜索按钮操作，加载数据
+            form.on('submit(data-search-btn)', function (data) {
+
+                var obj = data.field; // 遍历表单参数，查看扫描框元素是否在数据中
+                $.each(obj, function(key, val){
+                    if(key=="ScanC" && val== "on"){
+                        $("#patientIdId").focus(); // 焦点选在条码框
+                        $("#patientIdId").val(""); // 条码框内容清空
+                        $("#nameId").val(""); // 姓名清空
+                        $("#phoneId").val(""); // 电话清空
+                        data.field["patientName"]=""; // 姓名的值清空
+                        data.field["phone"]=""; // 电话的值清空
+                    }
+                });
+
+                //console.log(data.field);
+                // 监听搜索表单的sumbit方法，传入相应的值
+                // data.field方法，把对象转换成json格式
+                // JSON.stringify(data.field)方法，把json转换成string类型
+                // data.field["patientId"]方法，根据json的键值获取value值
+
+
+                //执行搜索后的，重载数据表格
+                chargeCenter.reload('currentTableId', {
+                    page: {
+                        curr: 1 // 重新从第一页开始
+                    }
+                    , where: {
+                        // 为传入后台的键值对赋值
+                        // 当键值与后台pojo类对应的属性名相同时，SpringMVC会自动赋值，后台用对应的对象来接收即可
+                        patientId: data.field["patientId"],
+                        patientName:data.field["patientName"],
+                        phone:data.field["phone"]
+
+                    }
+                }, 'data');
+
+                return false;
+            });
+
+        });
+
+        // 加载待收费的数据表格
+        chargeCenter.render({
+            elem: '#currentTableId', // 绑定的元素
+            url: '/showWaitCharge', // 表格的数据接口，展示表格都会经过这个接口
+            limit: 5, // 定义每页显示几条数据
+            limits: [5, 10, 15], // 定义每页条数的选项
+            cols:
+                [
+                    [
+                        { minWidth: 100, title: '就诊卡',event:'detial',templet:function(d){
+                                return d.patientInfo.patientId;}},
+                        {field: 'medicalRecordId', minWidth: 100, title: '病历号',event:'detial'},
+                        {field: 'consultationDate', minWidth: 180, title: '接诊日期',event:'detial',templet:function (d) {
+                                return timestampToTimeConsltation(d['consultationDate'])
+                            }},
+                        { minWidth: 80, title: '姓名',event:'detial',templet:function(d){
+                                return d.patientInfo.patientName;}},
+                        {title: '性别', minWidth: 50,event:'detial',templet:function(d){
+                                return d.patientInfo.sex;}},
+                        { minWidth: 80, title: '出生日期',event:'detial',templet:function (d) {
+                                return timestampToTime(d.patientInfo.birthday)
+                            }},
+                        {minWidth: 50, title: '电话',templet:'#batchNumber',event:'detial',templet:function(d){
+                                return d.patientInfo.phone;}},
+                        {title: '操作', minWidth: 50, templet: '#currentTableBar', fixed: "right", align: "center"}
+                    ]
+                ],
+            page: { //支持传入laypage组件的所有参数（某些参数除外，如：jump/elem） - 详见文档
+                layout: ['prev', 'page', 'next', 'skip', 'limit', 'count'], //自定义分页布局
+                curr: 1, // 设定初始在第几页
+                groups: 3, //只显示几个连续页码
+                first: false, //显示首页
+                last: false //显示尾页
+            }
+        });
+
+
+
+        // 封装函数，时间戳格式化函数(出生日期)
+        function timestampToTime(timestamp) {
+            //时间戳为10位需*1000，时间戳为13位的话不需乘1000
+            var date = new Date(timestamp);
+            Y = date.getFullYear() + '-';
+            M = (date.getMonth()+1 < 10 ? '0'+(date.getMonth()+1) : date.getMonth()+1) + '-';
+            D = date.getDate() + ' ';
+            h = date.getHours() + ':';
+            m = date.getMinutes() + ':';
+            s = date.getSeconds();
+            return Y+M+D;
+        }
+
+        // 格式化时间戳就诊日期
+        function timestampToTimeConsltation(timestamp) {
+            //时间戳为10位需*1000，时间戳为13位的话不需乘1000
+            var date = new Date(timestamp);
+            Y = date.getFullYear() + '-';
+            M = (date.getMonth()+1 < 10 ? '0'+(date.getMonth()+1) : date.getMonth()+1) + '-';
+            D = date.getDate() + ' ';
+            h = date.getHours() + ':';
+            m = date.getMinutes() + ':';
+            s = date.getSeconds();
+            return Y+M+D+h+m+s;
+        }
+
+        // 监听单元格内的事件，弹出详细信息
+        chargeCenter.on('tool(currentTableFilter)',function(obj){
+
+            // 取得行数据
+            var data=obj.data;
+
+            // 监听最后一行的数据操作，数据按钮,是否点击挂号按钮
+            if (obj.event === 'charge') {
+
+               // console.log(obj['data']['patientInfo']['patientId']);
+               // console.log(obj['data']['medicalRecordId']);
+                layer.open({
+                    title:'收费详情',
+                    type:2,
+                    shade:0.2,
+                    maxmin:true,
+                    shadeClose:true,
+                    area:['100%','100%'],
+                    content:['/chargeDetail'],
+                    success: function(layero, index){  // 父页向子页面传值
+                        var body = layer.getChildFrame('body', index);
+                        var iframeWin = window[layero.find('iframe')[0]['name']]; //得到iframe页的窗口对象，执行iframe页的方法：iframeWin.method();
+                        body.find('#medicalRecordIdId').val(obj['data']['medicalRecordId']); // 为子元素挂号赋值
+                        body.find('#patientIdId').val(obj['data']['patientInfo']['patientId']); // 为子元素病历号赋值
+                        // $.each(data,function (key,val) { // 遍历数据，进行赋值
+                        //     body.find('#'+key+'Id').val(val); // 为子元素赋值
+                        // });
+                    },
+                    end:function(){
+                        var curr=$(".layui-laypage-em").next().html(); //当前页码值
+                        chargeCenter.reload('currentTableId', { // 表格重载
+                            page: {
+                                curr: curr // 从当前页开始
+                            }
+                        });
+                    }
+                });
+
+            }
+
+
+        });
+
+
+    });
+
+</script>
+
+
+
+</body>
+</html>
